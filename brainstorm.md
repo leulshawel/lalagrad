@@ -1,4 +1,6 @@
+using tinyrgrad as a guide
+
 implement a small Tesor class
-        multidimentional array
-        uniform dtype elements
-            
+        a tensor is just a list 
+        a shape is jist a way to look at it
+

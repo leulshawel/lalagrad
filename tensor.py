@@ -1,54 +1,40 @@
 import numpy as np
 from dtype import Dtype
 from typing import Optional, Union, List
-
-
-Scalar = Union[int, float, bool]
+from helper import flatten, get_shape, Scalar, dtype
 
 class Tensor():
     __slots__ = "shape", "dtype", "ctx", "ret" #No More attributes
     
-    #I dont know if this is a good idea
+    def __init__(self, data: Optional[Union[None, np.ndarray, List, Scalar]]=None, shape: tuple[int]=None, dtype: Optional[Dtype]=None, ctx = None, ret: bool=True):
+        assert dtype is None or isinstance(dtype, Dtype), "dtype unknown"
+        
+        if data is None: 
+            assert shape is not None and dtype is not None, "shape and dtype are required if data is not provided"
+            np.ndarray(shape, dtype)
+        else:
+            if isinstance(data, (list, tuple)): self.data, self.shape = flatten(data), None
+            else: raise RuntimeError("Tensor creatin failed")
+        
+    #How do you want the result of your ops on this Tensor
     def ret_handler(func):
         def wrapper(self, other):
             value = func(self, other)
             if self.ret and other.ret: return value
-            elif self.ret: other.tensor = value
-            else: self.tensor = value
-    
-    def __init__(self, data: Optional[Union[None, np.ndarray, List, Scalar]]=None, shape: tuple[int]=None, dtype: Optional[Dtype]=None, ctx = None, ret: bool=True):
-        assert dtype == None or isinstance(dtype, Dtype), "Data type unknown"
-        
-        if isinstance(data, List) and data != None: 
-            self.tensor = np.array(data)
-            assert self.shape == None or self.shape == Tensor.get_shape(data), "Shape doesn't match"   
-        else: 
-            print("Unseported Dtype") 
-            self.shape  = self.dtype = None
+            if self.ret: other.data = value
+            else: self.data = value
             
-    # 
-    def set (self, value=0):
-        self.tensor = np.array(0)
-    
     @ret_handler
-    def __add__(self, other):
-        return self.tensor + other.tensor #numpy addition
-    
+    def __add__(self, other): return self.tensor + other.tensor
     @ret_handler
-    def __sub__(self, other):
-        return self.tensor - other.tensor #numpy subs
-    
+    def __sub__(self, other): return self.tensor - other.tensor 
     @ret_handler
-    def sadd(self, other): #Scalar addition
-        assert isinstance(other, self.dtype), "incompatible datatype"
-        return self.tensor + other.tensor
+    def __mul__(self, other): return self.tensor * other.tensor 
+    def __repr__(self): return f"<Tensor of Shape: {self.shape} dtype> {self.dtype}>"
+    @ret_handler
+    def sadd(self, other): return self.tensor + other.tensor # Tensor + Scalar
+    
+    def set (self, value: Union[int, float, bool, dtype]=0): self.tensor = np.ndarray(self.shape, self.dtype).zero()
+
     
     
-    def __repr__(self):
-        return f"<Tensor> of <Shape>: {self.shape} <dtype>: {self.dtype}"
-    
-    @staticmethod
-    def get_shape(data: List[Union[int, float, bool, List]]):
-            shape = []
-            
-            return tuple(shape)
