@@ -1,4 +1,3 @@
 class Dtype:
-    #Dont got no idea why these framewors define datatypes
-    #We will see if it is actually neccessary and implement it
-    pass
+    def __init__(self, dtype=None): self.dtype = dtype
+    def __repr__(self): return f"{self.dtype}"
