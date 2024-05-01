@@ -1,6 +1,6 @@
 #some usable funcs and classes not directly related to any object
 from typing import List, Union, Tuple
-from dtype import Dtype
+from lalagrad.dtype import Dtype
 import math
 
 
@@ -25,7 +25,7 @@ def reverse(l):
     l.reverse()
     return l
 
-#devide a list in to n number if lists of equak size
+#devide a list in to n number if lists of equal size
 def devid_list(l, n):
     assert not len(l) % n, f"array not devisible in to equal {n} arrays"
     ne = int(len(l)/n)

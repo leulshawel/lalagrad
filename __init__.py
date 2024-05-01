@@ -1,2 +1,2 @@
-from dtype import Dtype
-from tensor import Tensor
+from lalagrad.dtype import Dtype
+from lalagrad.tensor import Tensor

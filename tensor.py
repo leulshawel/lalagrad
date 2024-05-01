@@ -1,15 +1,16 @@
 import numpy as np
 from typing import Optional, Union, List
 
-from dtype import Dtype
-from array_ops import flatten, array_from_shape, add_const,\
+from lalagrad.  dtype import Dtype
+from lalagrad.array_ops import flatten, array_from_shape, add_const,\
     shape_from_array, reverse, num_of_elems, scale, devid_list
-from ops import binary_op_wrapper, unary_op_wrapper
+    
+from lalagrad.ops import binary_op_wrapper, unary_op_wrapper
 
 class Tensor():
     __slots__ = "data", "shape", "dtype", "ctx", "strong", "mat" 
     class Matrix:
-        #TODO: implement matrix multiplication
+        #TODO: implement matrix multiplicationhttps://github.com/karpathy/micrograd
         def matmul(self, other):
             assert isinstance(other, Tensor.Matrix),\
                 "matrix multiplication is only defined for 2D Tensors"
@@ -19,6 +20,7 @@ class Tensor():
         shape: tuple[int]=None, dtype: Optional[Dtype]=None, ctx = None, strong: bool=True):
         assert dtype is None or isinstance(dtype, Dtype), "dtype unknown"
         self.strong = strong
+        #if not isinstance(data[0], (list, tuple)): data = [data] #No vector so far
         if data is None:  
             assert shape is not None and dtype is not None, "shape and dtype are required if data is None"
             self.data, self.shape = flatten(array_from_shape(shape)), shape
