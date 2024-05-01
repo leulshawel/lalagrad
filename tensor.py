@@ -2,13 +2,15 @@ import numpy as np
 from typing import Optional, Union, List
 
 from dtype import Dtype
-from array_ops import flatten, array_from_shape, add_const, shape_from_array, reverse
+from array_ops import flatten, array_from_shape, add_const,\
+    shape_from_array, reverse, num_of_elems
 from ops import binary_op_wrapper, unary_op_wrapper
 
 class Tensor():
     __slots__ = "data", "shape", "dtype", "ctx", "strong" #No More attributes
-    
-    def __init__(self, data: Optional[Union[None, np.ndarray, List, int, float, bool]]=None, shape: tuple[int]=None, dtype: Optional[Dtype]=None, ctx = None, strong: bool=True):
+                 
+    def __init__(self, data: Optional[Union[None, np.ndarray, List, int, float, bool]]=None, 
+        shape: tuple[int]=None, dtype: Optional[Dtype]=None, ctx = None, strong: bool=True):
         assert dtype is None or isinstance(dtype, Dtype), "dtype unknown"
         self.strong = strong
         if data is None:  
@@ -20,7 +22,7 @@ class Tensor():
         self.dtype = dtype
         
     @classmethod
-    def new(cls, data=None, shape=None, dtype=None, ctx=None, strong=None):return cls(data, shape, dtype, ctx, strong)
+    def new(cls, data=None, shape=None, dtype=None, ctx=None, strong=None): return cls(data, shape, dtype, ctx, strong)
     #on self or return binary ops
     @binary_op_wrapper
     def __add__(self, other): return [x+y for x, y in zip(self.data, other.data)]
@@ -39,5 +41,20 @@ class Tensor():
     
     #on self ops
     def set(self, val: Union[int, float, bool]): self.data = set(self.data, val)
+    #TODO: expand the tensor in a dimension
+    def expand(sz, dim): pass
+    #reshaping the tensor is simple
+    def reshape(self, shape):
+        assert num_of_elems(self.shape) == num_of_elems(shape), "Tensor can't be of this shape"
+        self.shape = shape
     
+    #TODO: reduce Ops  
+    #dot product
+    def dot(self, other): pass
+    #add elemens in a single dimension
+    def sum(self, dim): pass
+    #multopy two tensors
+    def matmul(self, other):
+        shape = self.shape
+    def mul(self, other): return self * other
     
