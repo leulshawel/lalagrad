@@ -1,19 +1,20 @@
-from typing import Final
+from typing import Final, Optional
 from dataclasses import dataclass
 
-@dataclass(order=True, frozen=True)
+@dataclass(order=True, frozen=True, repr=False)
 class DType:
     strength: int #higher strength type will be the type of op results
     name: str #name of the data type
     bytes: int #How many bytes does it take
+    fmt: Optional[str]
     sz: int    #
-    def __repr__(self): return f"{ self.dtype }"
     
   
 #Common data types  
 class dtypes:
   @staticmethod
   def get_type(val): return dtypes.bool if isinstance(val, (bool)) else (dtypes.int8)
+  #from geohotz tinygrad
   bool: Final[DType]     = DType(0, 1, "bool", '?', 1)
   int8: Final[DType]     = DType(1, 1, "char", 'b', 1)
   uint8: Final[DType]    = DType(2, 1, "unsigned char", 'B', 1)
