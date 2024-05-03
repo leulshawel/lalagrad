@@ -1,7 +1,7 @@
 import numpy as np
 from typing import Optional, Union, List
 
-from lalagrad.  dtype import Dtype
+from lalagrad.dtype import DType, dtype
 from lalagrad.array_ops import flatten, array_from_shape, add_const,\
     shape_from_array, reverse, num_of_elems, scale, devid_list
     
@@ -17,8 +17,8 @@ class Tensor():
             pass
     
     def __init__(self, data: Optional[Union[None, List, int, float, bool]]=None, 
-        shape: tuple[int]=None, dtype: Optional[Dtype]=None, ctx = None, strong: bool=True):
-        assert dtype is None or isinstance(dtype, Dtype), "dtype unknown"
+        shape: tuple[int]=None, dtype: Optional[DType]=None, ctx = None, strong: bool=True):
+        assert dtype is None or isinstance(dtype, DType), "dtype unknown"
         self.strong = strong
         #if not isinstance(data[0], (list, tuple)): data = [data] #No vector so far
         if data is None:  
@@ -45,18 +45,17 @@ class Tensor():
     def __sub__(self, other): return [x-y for x, y in zip(self.data, other.data)]
     @binary_op_wrapper
     def __mul__(self, other): return [x*y for x, y in zip(self.data, other.data)]
-    def matmul(self, other):  return Tensor(data=self.mat.matmul(other.mat)) 
+    def matmul(self, other):  return Tensor(data=self.mat.matmul(other.mat)) if self.mat else None
     
     #on self or return unaryOps
     @unary_op_wrapper
     def sadd(self, s): return add_const(self.data, s)
-    #on self or return unaryOps
     @unary_op_wrapper
     def smul(self, s): return scale(self.data, s)
     @unary_op_wrapper
     def __sqr__(self): return self * self
     @unary_op_wrapper
-    def __not__(self):  return [not b for b in self.data] if self.dtype==Dtype('bool') else []
+    def __not__(self):  return [not b for b in self.data] if self.dtype==DType('bool') else []
     
     #on self ops
     def set(self, val: Union[int, float, bool]): self.data = set(self.data, val)
@@ -74,6 +73,10 @@ class Tensor():
     #dot product
     def dot(self, other, axis): pass
     #add elemens in a single axis
-    def sum(self, axis): pass
+    def sum(self, axis): return 
     #elemnt-wise multiplication
     def mul(self, other): return self * other
+    #min along an axis or of a Tensor
+    def min(self, axis): pass
+    #max
+    def max(self, axis): pass
