@@ -2,7 +2,7 @@ import numpy as np
 from typing import Optional, Union, List
 import math
 
-from lalagrad.dtype import DType, dtypes
+from lalagrad.dtype import DType, dtypes, PREMITIVE_TYPES_DICT
 from lalagrad.device import Device ,devices
 from lalagrad.ops import binary_op_wrapper, unary_op_wrapper
 from lalagrad.array_ops import flatten, array_from_shape, add_const,\
@@ -20,7 +20,8 @@ class Tensor():
         assert (all([isinstance(r, (list, tuple)) for r in data]) or shape) and len(data), "improper data"
         
         self.data, self.shape = flatten(data), tuple(reverse(shape_from_array(data)))
-        self.dtype, self.device, self.strong, self.ctx, self.requires_grad = dtype, device, strong, ctx, requires_grad
+        self.device, self.strong, self.ctx, self.requires_grad = device, strong, ctx, requires_grad
+        self.dtype = next((v for  v in PREMITIVE_TYPES_DICT.values() if v.eq == self.data[0].__class__), None)
         self.grad: Optional[Tensor] = None
         self.mat = Tensor.Matrix() if len(self.shape) == 2 else None
         
@@ -32,6 +33,8 @@ class Tensor():
     def ones(cls, shape, dtype=dtypes.int16, device=devices.CPU, ctx=None, strong=None, requires_grad=False): return cls(array_from_shape(shape, 1), shape, dtype, device, ctx, requires_grad, strong)
     @classmethod
     def ones_like(cls, self): return cls.ones(self.shape, self.dtype, self.device, self.ctx, self.requires_grad, self.strong)
+    @classmethod
+    def zeros_like(cls, self): return cls.zeros(self.shape, self.dtype, self.device, self.ctx, self.requires_grad, self.strong)
     
     #get the data with right dimension (unflatten)
     def view(self, l=None, n=0): 
@@ -89,22 +92,22 @@ class Tensor():
     def dot(self, other, axis): pass
     #add elemens in a single axis
     def sum(self, axis=None):
-        if axis: return min(self.data)
+        if axis is None: return sum(self.data)
         else:
             assert axis < len(self.shape), "dimension doesn't exist"
     #elemnt-wise multiplication
     def mul(self, axis=None):
-        if axis: return math.prod(self.data)
+        if axis is None: return math.prod(self.data)
         else:
             assert axis < len(self.shape), "dimension doesn't exist"
     #min along an axis or of a Tensor
     def min(self, axis=None):
-        if axis: return min(self.data)
+        if axis is None: return min(self.data)
         else:
             assert axis < len(self.shape), "dimension doesn't exist"
     #max along an axis or of a Tensor
     def max(self, axis=None): 
-        if axis: return max(self.data)
+        if axis is None: return max(self.data)
         else:
             assert axis < len(self.shape), "dimension doesn't exist"
         
