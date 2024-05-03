@@ -8,22 +8,19 @@ from lalagrad.array_ops import flatten, array_from_shape, add_const,\
     shape_from_array, reverse, num_of_elems, scale, devid_list, _set
 
 class Tensor():
-    __slots__ = "data", "device", "shape", "dtype", "ctx", "strong", "mat", "requires_grad"
+    __slots__ = "data", "device", "shape", "dtype", "ctx", "strong", "mat", "requires_grad", "grad"
     class Matrix:
-        #TODO: implement matrix multiplicationhttps://github.com/karpathy/micrograd
+        #TODO: implement matrix multiplication 
         def matmul(self, other):
-            assert isinstance(other, Tensor.Matrix),\
-                "matrix multiplication is only defined for 2D Tensors"
-            pass
+            return [[0]]
     
     def __init__(self, data: Optional[Union[None, List, int, float, bool]], shape: tuple[int]=None, dtype: Optional[DType]=None, 
                  device: Device=devices.CPU, ctx = None, requires_grad=False, strong: bool=True):
-        assert all([isinstance(r, (list, tuple)) for r in data]) and len(data), "improper data"
-        assert shape is None or shape == tuple(reverse(shape_from_array(data))), "Shape doesn't match data shape"
+        assert (all([isinstance(r, (list, tuple)) for r in data]) or shape) and len(data), "improper data"
         
         self.data, self.shape = flatten(data), tuple(reverse(shape_from_array(data)))
-        self.dtype, self.device, self.strong = dtype, device, strong
-        self.ctx, self.requires_grad = ctx, requires_grad
+        self.dtype, self.device, self.strong, self.ctx, self.requires_grad = dtype, device, strong, ctx, requires_grad
+        self.grad: Optional[Tensor] = None
         self.mat = Tensor.Matrix() if len(self.shape) == 2 else None
         
     @classmethod
@@ -45,6 +42,7 @@ class Tensor():
     def is_float(self): return self.dtype in (dtypes.float16, dtypes.float32, dtypes.float64)
     def get_device(self): return self.device  
     def numel(self): return num_of_elems(self.shape)  
+    def __repr__(self): return f"<Tensor: of shape: {self.shape}, {self.dtype} on {self.device} with grad: {self.grad}>"
     
     #set tensor properties
     def set_device(self, d: Device): self.device = d
@@ -56,7 +54,10 @@ class Tensor():
     def __sub__(self, other): return [x-y for x, y in zip(self.data, other.data)]
     @binary_op_wrapper
     def __mul__(self, other): return [x*y for x, y in zip(self.data, other.data)]
-    def matmul(self, other):  return Tensor(data=self.mat.matmul(other.mat)) if self.mat else None
+    def matmul(self, other):  
+        assert self.mat is not None and other.mat is not None,\
+        "matrix multiplication only for 2D Tensors (Matrices)"
+        return Tensor(data=self.mat.matmul(other.mat))
     
     #Order
     def __eq__(self, other): return self.dtype == other.dtype and self.shape == other.shape
