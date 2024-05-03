@@ -8,7 +8,7 @@ from lalagrad.array_ops import flatten, array_from_shape, add_const,\
     shape_from_array, reverse, num_of_elems, scale, devid_list, _set
 
 class Tensor():
-    __slots__ = "data", "device", "shape", "dtype", "ctx", "strong", "mat" 
+    __slots__ = "data", "device", "shape", "dtype", "ctx", "strong", "mat", "requires_grad"
     class Matrix:
         #TODO: implement matrix multiplicationhttps://github.com/karpathy/micrograd
         def matmul(self, other):
@@ -16,21 +16,25 @@ class Tensor():
                 "matrix multiplication is only defined for 2D Tensors"
             pass
     
-    def __init__(self, data: Optional[Union[None, List, int, float, bool]], device: Device=devices.CPU,
-        shape: tuple[int]=None, dtype: Optional[DType]=None, ctx = None, requires_grad=False, strong: bool=True):
+    def __init__(self, data: Optional[Union[None, List, int, float, bool]], shape: tuple[int]=None, dtype: Optional[DType]=None, 
+                 device: Device=devices.CPU, ctx = None, requires_grad=False, strong: bool=True):
         assert all([isinstance(r, (list, tuple)) for r in data]) and len(data), "improper data"
-        assert shape == tuple(reverse(shape_from_array(data))), "Shape doesn't match data shape"
+        assert shape is None or shape == tuple(reverse(shape_from_array(data))), "Shape doesn't match data shape"
         
         self.data, self.shape = flatten(data), tuple(reverse(shape_from_array(data)))
         self.dtype, self.device, self.strong = dtype, device, strong
+        self.ctx, self.requires_grad = ctx, requires_grad
         self.mat = Tensor.Matrix() if len(self.shape) == 2 else None
         
     @classmethod
-    def new(cls, data, device, shape=None, dtype=None, ctx=None, strong=None): return cls(data, device, shape, dtype, ctx, strong)
+    def new(cls, data, shape, dtype=None, device=devices.CPU, ctx=None, strong=None, requires_grad=False): return cls(data, shape, dtype, device, ctx, requires_grad, strong)
     @classmethod
-    def zeros(cls, device, shape, dtype=dtypes.int8): return cls(array_from_shape(shape, 0), device, shape=shape, dtype=dtype)
+    def zeros(cls, shape, dtype=dtypes.int16, device=devices.CPU, ctx=None, strong=None, requires_grad=False): return cls(array_from_shape(shape, 0), shape, dtype, device, ctx, requires_grad, strong)
     @classmethod
-    def ones(cls, device, shape, dtype=dtypes.int8): return cls(array_from_shape(shape, 1), device, shape=shape, dtype=dtype)
+    def ones(cls, shape, dtype=dtypes.int16, device=devices.CPU, ctx=None, strong=None, requires_grad=False): return cls(array_from_shape(shape, 1), shape, dtype, device, ctx, requires_grad, strong)
+    @classmethod
+    def ones_like(cls, self): return cls.ones(self.shape, self.dtype, self.device, self.ctx, self.requires_grad, self.strong)
+    
     #get the data with right dimension (unflatten)
     def view(self, l=None, n=0): 
         if not l: l = self.data
@@ -53,6 +57,9 @@ class Tensor():
     @binary_op_wrapper
     def __mul__(self, other): return [x*y for x, y in zip(self.data, other.data)]
     def matmul(self, other):  return Tensor(data=self.mat.matmul(other.mat)) if self.mat else None
+    
+    #Order
+    def __eq__(self, other): return self.dtype == other.dtype and self.shape == other.shape
     
     #on self or return unaryOps
     @unary_op_wrapper
