@@ -1,11 +1,12 @@
 import numpy as np
 from typing import Optional, Union, List
+import math
 
 from lalagrad.dtype import DType, dtypes
 from lalagrad.device import Device ,devices
 from lalagrad.ops import binary_op_wrapper, unary_op_wrapper
 from lalagrad.array_ops import flatten, array_from_shape, add_const,\
-    shape_from_array, reverse, num_of_elems, scale, devid_list, _set
+    shape_from_array, reverse, scale, devid_list, _set
 
 class Tensor():
     __slots__ = "data", "device", "shape", "dtype", "ctx", "strong", "mat", "requires_grad", "grad"
@@ -41,7 +42,7 @@ class Tensor():
     #get Tensor properties
     def is_float(self): return self.dtype in (dtypes.float16, dtypes.float32, dtypes.float64)
     def get_device(self): return self.device  
-    def numel(self): return num_of_elems(self.shape)  
+    def numel(self): return math.prod(self.shape)  
     def __repr__(self): return f"<Tensor: of shape: {self.shape}, {self.dtype} on {self.device} with grad: {self.grad}>"
     
     #set tensor properties
@@ -79,7 +80,7 @@ class Tensor():
     def expand(self, shape, n=0): pass             
     def transpose(self, axis1, axis2): self.shape[axis1], self.shape2 = self.shape[axis2], self.shape[axis1]
     def reshape(self, shape):
-        assert num_of_elems(self.shape) == num_of_elems(shape), "Tensor can't be of this shape"
+        assert math.prod(self.shape) == math.prod(shape), "Tensor can't be of this shape"
         self.mat = Tensor.Matrix() if len(shape) == 2 else None
         self.shape = tuple(shape)
     
@@ -87,10 +88,24 @@ class Tensor():
     #dot product
     def dot(self, other, axis): pass
     #add elemens in a single axis
-    def sum(self, axis): return 
+    def sum(self, axis=None):
+        if axis: return min(self.data)
+        else:
+            assert axis < len(self.shape), "dimension doesn't exist"
     #elemnt-wise multiplication
-    def mul_aix(self, other): return self * other
+    def mul(self, axis=None):
+        if axis: return math.prod(self.data)
+        else:
+            assert axis < len(self.shape), "dimension doesn't exist"
     #min along an axis or of a Tensor
-    def min(self, axis): pass
-    #max
-    def max(self, axis): pass
+    def min(self, axis=None):
+        if axis: return min(self.data)
+        else:
+            assert axis < len(self.shape), "dimension doesn't exist"
+    #max along an axis or of a Tensor
+    def max(self, axis=None): 
+        if axis: return max(self.data)
+        else:
+            assert axis < len(self.shape), "dimension doesn't exist"
+        
+ 
