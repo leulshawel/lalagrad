@@ -134,5 +134,7 @@ class Tensor():
         if axis is None: return max(self.data)
         else:
             assert axis < len(self.shape), "dimension doesn't exist"
+            
+
         
  

@@ -7,6 +7,7 @@ def binary_op_wrapper(func):
             #new Tensor with the result of the op
             strongest_dtype = self.dtype if self.dtype.strength > other.dtype.strength else other.dtype
             new = self.new(data=func(self, other), shape=self.shape, dtype=strongest_dtype, device=self.device, requires_grad=self.requires_grad or other.requires_grad) 
+            new.check()
             if self.strong and other.strong: return  new #return new if both are strong tensors
             if self.strong: other.data, other.dtype = func(self, other), strongest_dtype
             else: self.data, self.dtype = func(self, other), strongest_dtype  
