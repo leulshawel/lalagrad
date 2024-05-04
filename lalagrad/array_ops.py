@@ -1,7 +1,7 @@
 #some usable funcs and classes not directly related to any object
 from typing import List, Union, Tuple
 from lalagrad.dtype import DType
-import math
+import random
 
 
 def get_shape(data: List[Union[int, float, bool, List]]): pass
@@ -10,6 +10,9 @@ def flatten(l: Union[List, Tuple]): return [item for sublist in l for item in (f
 #generate an array from a shape
 def array_from_shape(shape: Union[List, tuple, int], val=0): return [val for _ in range(shape[0])] if len(shape)==1 \
     else [array_from_shape(shape[1:], val) for _ in range(shape[0])]
+#random vals
+def rand_array_from_shape(shape: Union[List, tuple, int], p=4): return [round(random.random(), p)for _ in range(shape[0])] if len(shape)==1 \
+    else [rand_array_from_shape(shape[1:], p) for _ in range(shape[0])]
 #get shape from array assuming you provided the right tensor and return is in reverse order
 def shape_from_array(l: Union[List, Tuple]): return shape_from_array(l[0]) + [len(l)] if isinstance(l[0], (tuple, list)) else [len(l)]
 #add a constant value on every element of a list
