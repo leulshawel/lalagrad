@@ -29,7 +29,7 @@ class Tensor():
         self.mat = Tensor.Matrix() if len(self.shape) == 2 else None
         
     @classmethod
-    def new(cls, data, shape, dtype=None, device=devices.CPU, ctx=None, strong=None, requires_grad=False): return cls(data, shape, dtype, device, ctx, requires_grad, strong)
+    def new(cls, data, shape=None, dtype=None, device=devices.CPU, ctx=None, strong=None, requires_grad=False): return cls(data, shape, dtype, device, ctx, requires_grad, strong)
     @classmethod
     def zeros(cls, shape, dtype=dtypes.int16, device=devices.CPU, ctx=None, strong=None, requires_grad=False): return cls(array_from_shape(shape, 0), shape, dtype, device, ctx, requires_grad, strong)
     @classmethod
@@ -76,7 +76,7 @@ class Tensor():
     @binary_op_wrapper
     def __mul__(self, other): return [x*y for x, y in zip(self.data, other.data)]
     @binary_op_wrapper
-    def __div__(self, other): return [x/y for x, y in zip(self.data, other.data)]
+    def __div__(self, other): return [round(x/y, self.dtype.precision) if self.dtype.precision is not None else x/y for x, y in zip(self.data, other.data)]
     def matmul(self, other):  
         assert self.mat is not None and other.mat is not None,\
         "matrix multiplication only for 2D Tensors (Matrices)"
@@ -91,12 +91,17 @@ class Tensor():
     @unary_op_wrapper
     def smul(self, s): return scale(self.data, s)
     @unary_op_wrapper
+    def __not__(self):  return [not b for b in self.data] if self.dtype==DType('bool') else []
+    @unary_op_wrapper
     def __pow__(self, e):  
         return  [elem**e for elem in self.data] if self.dtype not in (dtypes.bool,)  else None
     @unary_op_wrapper
-    def __not__(self):  return [not b for b in self.data] if self.dtype==DType('bool') else []
+    def log(self, b=10): return [round(math.log10(elem)/math.log10(b), self.dtype.precision) if self.dtype.precision is not None else math.log10(elem)/math.log10(b) for elem in self.data]
+    
     
     #on self ops
+    def check(self): 
+        self.data = [round(e, self.dtype.precision) if self.dtype.precision is not None else e for e in self.data] #Correct the precicision
     def set_data(self, val: Union[int, float, bool]): self.data = _set(self.data, val)
     #TODO: expand the tensor in a axis
     def expand(self, shape, n=0): pass             

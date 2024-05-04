@@ -16,7 +16,7 @@ def binary_op_wrapper(func):
 def unary_op_wrapper(func):
     def wrapper(self, other):
         assert self.data is not None, "Op on Empty Tensor"
-        new = self.new(data=func(self, other), requires_grad=self.requires_grad) 
+        new = self.new(data=func(self, other), shape=self.shape, requires_grad=self.requires_grad) 
         if self.strong: return new
         self.data = func(self, other)
         self.dtype = self.dtype if self.dtype.strength > new.dtype.strength else new.dtype
