@@ -24,7 +24,7 @@ def reverse(l):
     return l
 
 #devide a list in to n number if lists of equal size
-def devid_list(l, n):
+def devide_array(l, n):
     assert not len(l) % n, f"array not devisible in to equal {n} arrays"
     ne = int(len(l)/n)
     return [l[i*ne:ne*(i+1)] for i in range(n)]

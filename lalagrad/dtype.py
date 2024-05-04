@@ -31,5 +31,5 @@ class dtypes:
   float32: Final[DType] = DType(11, 4, "float", 'f', None)
   float64: Final[DType] = DType(12, 8, "double", 'd', float)
   
-PREMITIVE_TYPES_DICT = {k: v for k, v in dtypes.__dict__.items() if isinstance(v, DType)}
+TYPES_DICT = {k: v for k, v in dtypes.__dict__.items() if isinstance(v, DType)}
   

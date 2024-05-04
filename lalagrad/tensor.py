@@ -2,11 +2,11 @@ import numpy as np
 from typing import Optional, Union, List
 import math
 
-from lalagrad.dtype import DType, dtypes, PREMITIVE_TYPES_DICT
+from lalagrad.dtype import DType, dtypes, TYPES_DICT
 from lalagrad.device import Device ,devices
 from lalagrad.ops import binary_op_wrapper, unary_op_wrapper
 from lalagrad.array_ops import flatten, array_from_shape, add_const,\
-    shape_from_array, reverse, scale, devid_list, _set
+    shape_from_array, reverse, scale, devide_array, _set
 
 class Tensor():
     __slots__ = "data", "device", "shape", "dtype", "ctx", "strong", "mat", "requires_grad", "grad"
@@ -21,7 +21,7 @@ class Tensor():
         
         self.data, self.shape = flatten(data), tuple(reverse(shape_from_array(data)))
         self.device, self.strong, self.ctx, self.requires_grad = device, strong, ctx, requires_grad
-        self.dtype = next((v for  v in PREMITIVE_TYPES_DICT.values() if v.eq == self.data[0].__class__), None)
+        self.dtype = next((v for  v in TYPES_DICT.values() if v.eq == self.data[0].__class__), None)
         self.grad: Optional[Tensor] = None
         self.mat = Tensor.Matrix() if len(self.shape) == 2 else None
         
@@ -40,7 +40,7 @@ class Tensor():
     def view(self, l=None, n=0): 
         if not l: l = self.data
         if n+1 == len(self.shape): return l
-        return [self.view(dl, n+1) for dl in devid_list(l, self.shape[n])]  
+        return [self.view(dl, n+1) for dl in devide_array(l, self.shape[n])]  
     
     #get Tensor properties
     def is_float(self): return self.dtype in (dtypes.float16, dtypes.float32, dtypes.float64)
