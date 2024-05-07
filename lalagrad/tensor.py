@@ -102,7 +102,9 @@ class Tensor():
     
     #on self ops
     def check(self): 
-        self.data = [round(e, self.dtype.precision) if self.dtype.precision is not None else e for e in self.data] #Correct the precicision
+        assert self.data == [round(e, self.dtype.precision) if self.dtype.precision is not None else e for e in self.data],"check falied on dtype"
+        assert len(self.data) == math.prod(self.shape), "check failed on shape"
+        
     def setdata(self, val: Union[int, float, bool]): self.data = _set(self.data, val)
     #TODO: expand the tensor in a axis
     def expand(self, shape, n=0): pass
