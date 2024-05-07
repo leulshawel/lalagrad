@@ -7,7 +7,7 @@ class DType:
     bytes: int #How many bytes does it take
     name: str #name of the data type
     fmt: Optional[str]
-    eq: Optional[Union[int, str, float, bool]]
+    eq: Optional[Union[int, str, float, bool]] #equivalent python premitive dtype used for determening dtype from data when it is not passed
     precision: Optional[int]
     
     def __repr__(self): return f"<dtype: {self.name}({self.fmt})>"

@@ -1,6 +1,6 @@
 import numpy as np
 from typing import Optional, Union, List
-import math
+import math, numpy
 
 from lalagrad.dtype import DType, dtypes, TYPES_DICT
 from lalagrad.device import Device ,devices
@@ -21,8 +21,8 @@ class Tensor():
         else:   
             assert (all([isinstance(r, (list, tuple)) for r in data]) or shape) and len(data), "improper data" #Scalars and Vectors are not supported yet
             self.data, self.shape = flatten(data), tuple(reverse(shape_from_array(data)))
-            self.dtype = next((v for  v in TYPES_DICT.values() if v.eq == self.data[0].__class__), None)
-
+            if dtype is None: self.dtype = next((v for  v in TYPES_DICT.values() if v.eq == self.data[0].__class__), None)
+            
         
         self.device, self.strong, self.ctx, self.requires_grad = device, strong, ctx, requires_grad
         self.grad: Optional[Tensor] = None
@@ -37,8 +37,7 @@ class Tensor():
     @classmethod
     def empty(cls, shape, dtype=dtypes.int16, device=devices.CPU, ctx=None, strong=None, requires_grad=False): return cls(None, shape, dtype, device, ctx, requires_grad, strong)
     @classmethod
-    def rand(cls, shape, dtype=dtypes.float16, device=devices.CPU, ctx=None, strong=None, requires_grad=False): 
-        return cls(rand_array_from_shape(shape), shape, dtype, device, ctx, requires_grad, strong)
+    def rand(cls, shape, dtype=dtypes.float16, device=devices.CPU, ctx=None, strong=None, requires_grad=False): return cls(rand_array_from_shape(shape), shape, dtype, device, ctx, requires_grad, strong)
     @classmethod
     def ones_like(cls, self): return cls.ones(self.shape, self.dtype, self.device, self.ctx, self.requires_grad, self.strong)
     @classmethod
@@ -51,11 +50,11 @@ class Tensor():
     
     
     #get the data with right dimension (unflatten)
-    def view(self, l=None, n=0): 
+    def tolist(self, l=None, n=0):
         assert self.data is not None, "view() on empty tensor with no dimension"
         if not l: l = self.data
         if n+1 == len(self.shape): return l
-        return [self.view(dl, n+1) for dl in devide_array(l, self.shape[n])]  
+        return [self.tolist(dl, n+1) for dl in devide_array(l, self.shape[n])]  
     
     #get Tensor properties
     def is_float(self): return self.dtype in (dtypes.float16, dtypes.float32, dtypes.float64)
@@ -91,20 +90,22 @@ class Tensor():
     @unary_op_wrapper
     def smul(self, s): return scale(self.data, s)
     @unary_op_wrapper
-    def __not__(self):  return [not b for b in self.data] if self.dtype==DType('bool') else []
+    def __not__(self):  return [not b for b in self.data] if self.dtype==DType('bool') else [-1 * e for e in self._dat]
     @unary_op_wrapper
     def __pow__(self, e):  
         return  [elem**e for elem in self.data] if self.dtype not in (dtypes.bool,)  else None
     @unary_op_wrapper
-    def log(self, b=10): return [round(math.log10(elem)/math.log10(b), self.dtype.precision) if self.dtype.precision is not None else math.log10(elem)/math.log10(b) for elem in self.data]
+    def log(self, b=10): 
+        assert b != 1, "base can't be One"
+        return [round(math.log10(elem)/math.log10(b), self.dtype.precision) if self.dtype.precision is not None else math.log10(elem)/math.log10(b) for elem in self.data]
     
     
     #on self ops
     def check(self): 
         self.data = [round(e, self.dtype.precision) if self.dtype.precision is not None else e for e in self.data] #Correct the precicision
-    def set_data(self, val: Union[int, float, bool]): self.data = _set(self.data, val)
+    def setdata(self, val: Union[int, float, bool]): self.data = _set(self.data, val)
     #TODO: expand the tensor in a axis
-    def expand(self, shape, n=0): pass             
+    def expand(self, shape, n=0): pass
     def transpose(self, axis1, axis2): self.shape[axis1], self.shape2 = self.shape[axis2], self.shape[axis1]
     def reshape(self, shape):
         assert math.prod(self.shape) == math.prod(shape), "Tensor can't be of this shape"
@@ -117,24 +118,32 @@ class Tensor():
     #add elemens in a single axis
     def sum(self, axis=None):
         if axis is None: return sum(self.data)
-        else:
+        elif axis +1== len(self.shape): 
+            numelem = self.shape[axis]
+            return [[sum(self.data[i:i + numelem])] for i in range(0, len(self.data)-numelem+1, numelem)]
+        else: 
             assert axis < len(self.shape), "dimension doesn't exist"
-    #elemnt-wise multiplication
+    #mul elemens in a single axis
     def mul(self, axis=None):
         if axis is None: return math.prod(self.data)
+        elif axis +1== len(self.shape): 
+            numelem = self.shape[axis]
+            return [[math.prod(self.data[i:i + numelem])] for i in range(0, len(self.data)-numelem+1, numelem)]
         else:
             assert axis < len(self.shape), "dimension doesn't exist"
     #min along an axis or of a Tensor
     def min(self, axis=None):
         if axis is None: return min(self.data)
+        elif axis +1== len(self.shape): 
+            numelem = self.shape[axis]
+            return [[min(self.data[i:i + numelem])] for i in range(0, len(self.data)-numelem+1, numelem)]
         else:
             assert axis < len(self.shape), "dimension doesn't exist"
     #max along an axis or of a Tensor
     def max(self, axis=None): 
         if axis is None: return max(self.data)
+        elif axis +1== len(self.shape): 
+            numelem = self.shape[axis]
+            return [[max(self.data[i:i + numelem])] for i in range(0, len(self.data)-numelem+1, numelem)]
         else:
             assert axis < len(self.shape), "dimension doesn't exist"
-            
-
-        
- 

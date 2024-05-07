@@ -11,7 +11,8 @@ def binary_op_wrapper(func):
             if self.strong and other.strong: return  new #return new if both are strong tensors
             if self.strong: other.data, other.dtype = func(self, other), strongest_dtype
             else: self.data, self.dtype = func(self, other), strongest_dtype  
-        return wrapper  
+        return wrapper
+    
     
 #samething but for unary ops
 def unary_op_wrapper(func):
