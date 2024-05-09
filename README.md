@@ -1,5 +1,5 @@
 #lalagrad
-<img style="float: left" src=./lalagrad/utils/img/lala.jpeg alt=drawing height=200 width=200/>
+<img style="float: left" src=./lalagrad/utils/img/lala.jpeg alt=drawing height=400 width=200/>
 <b>This will be a mid-level Deep learning framework</b></br>
 <br><br><b>For Educational purposes mainly</b><br>
 
