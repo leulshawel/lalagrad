@@ -1,1 +1,2 @@
-from lalagrad.nn import autograd, optim
+from . import autograd
+from lalagrad.nn import optim

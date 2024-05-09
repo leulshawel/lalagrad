@@ -18,16 +18,30 @@ def shape_from_array(l: Union[List, Tuple]): return shape_from_array(l[0]) + [le
 #add a constant value on every element of a list
 def add_const(l: Union[List, Tuple], c: Union[int, float, bool, DType]): return [add_const(e, c) if isinstance(e, (list, tuple)) else e+c for e in l]
 #multiply with a scalar
-def scale(l: Union[List, Tuple], c: Union[int, float, bool, DType]): return [add_const(e, c) if isinstance(e, (list, tuple)) else e*c for e in l]
+def scale(l: Union[List, Tuple], c: Union[int, float, bool, DType]): return [scale(e, c) if isinstance(e, (list, tuple)) else e*c for e in l]
 #set every element to a value
-def _set (l: Union[List, Tuple], val: Union[int, float, bool, DType]=0): return [set(e, val) if isinstance(e, (list, tuple)) else val for e in l]
+def _set (l: Union[List, Tuple], val: Union[int, float, bool, DType]=0): return [_set(e, val) if isinstance(e, (list, tuple)) else val for e in l]
 #normal list.reverse() doesn't return
 def reverse(l): 
     l.reverse()
     return l
 
 #devide a list in to n number if lists of equal size
-def devide_array(l, n):
+def devide_array(l: Union[List, Tuple], n: int):
     assert not len(l) % n, f"array not devisible in to equal {n} arrays"
     ne = int(len(l)/n)
     return [l[i*ne:ne*(i+1)] for i in range(n)]
+
+#map a function on corresponding elements along a dimentsion
+def map_along_axis(l: Union[Tuple, List], f):
+    _class = l[0].__class__
+    assert all([e.__class__ == _class for e in l])
+    if isinstance(l[0], (int, float)): return [f(l)]
+    shape = shape_from_array(l[0]) 
+    assert all([shape_from_array(sub_l) == shape for sub_l in l])
+    return [f([ll[i] for ll in l]) for i in range(len(l[0]))] if isinstance(l[0][0], (int, float)) else [map_along_axis([ll[i] for ll in l], f) for i in range(len(l[0]))]
+
+def build_tensor(axis, l, d, f):
+        return [map_along_axis(ll, f) if d == axis else build_tensor(axis, ll, d+1, f) for ll in l]
+
+    

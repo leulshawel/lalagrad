@@ -6,7 +6,8 @@ from lalagrad.dtype import DType, dtypes, TYPES_DICT
 from lalagrad.device import Device ,devices
 from lalagrad.ops import binary_op_wrapper, unary_op_wrapper
 from lalagrad.array_ops import flatten, array_from_shape, add_const,\
-    shape_from_array, reverse, scale, devide_array, _set, rand_array_from_shape
+    shape_from_array, reverse, scale, devide_array, _set, rand_array_from_shape,\
+    map_along_axis, build_tensor
 
 class Tensor():
     __slots__ = "data", "device", "shape", "dtype", "ctx", "strong", "mat", "requires_grad", "grad"
@@ -15,33 +16,37 @@ class Tensor():
         def matmul(self, other):
             return [[0]]
     
-    def __init__(self, data: Optional[Union[None, List, int, float, bool]], shape: tuple[int]=None, dtype: Optional[DType]=None, 
+    def __init__(self, data: Optional[Union[None, List, int, float, bool]]=None, shape: tuple[int]=None, dtype: Optional[DType]=None, 
                  device: Device=devices.CPU, ctx = None, requires_grad=False, strong: bool=True):
-        if data is None: self.data, self.shape, self.dtype = None, shape, None
+        assert data is not None or shape is not None, "Tensor object requires atleast a data or a shape"
+        if data is None: self.data, self.shape = None, shape
         else:   
             assert (all([isinstance(r, (list, tuple)) for r in data]) or shape) and len(data), "improper data" #Scalars and Vectors are not supported yet
             self.data, self.shape = flatten(data), tuple(reverse(shape_from_array(data)))
-            if dtype is None: self.dtype = next((v for  v in TYPES_DICT.values() if v.eq == self.data[0].__class__), None)
-            
         
+        self.dtype =  next((v for  v in TYPES_DICT.values() if v.eq == self.data[0].__class__), None) if dtype is None else dtype    
         self.device, self.strong, self.ctx, self.requires_grad = device, strong, ctx, requires_grad
         self.grad: Optional[Tensor] = None
         self.mat = Tensor.Matrix() if len(self.shape) == 2 else None
         
     @classmethod
-    def new(cls, data, shape=None, dtype=None, device=devices.CPU, ctx=None, strong=None, requires_grad=False): return cls(data, shape, dtype, device, ctx, requires_grad, strong)
+    def zeros(cls, shape, dtype=dtypes.int16, device=devices.CPU, ctx=None, strong=None, requires_grad=False): 
+        return cls(array_from_shape(shape, 0), shape, dtype, device, ctx, requires_grad, strong)
     @classmethod
-    def zeros(cls, shape, dtype=dtypes.int16, device=devices.CPU, ctx=None, strong=None, requires_grad=False): return cls(array_from_shape(shape, 0), shape, dtype, device, ctx, requires_grad, strong)
+    def ones(cls, shape, dtype=dtypes.int16, device=devices.CPU, ctx=None, strong=None, requires_grad=False): 
+        return cls(array_from_shape(shape, 1), shape, dtype, device, ctx, requires_grad, strong)
     @classmethod
-    def ones(cls, shape, dtype=dtypes.int16, device=devices.CPU, ctx=None, strong=None, requires_grad=False): return cls(array_from_shape(shape, 1), shape, dtype, device, ctx, requires_grad, strong)
+    def empty(cls, shape, dtype=dtypes.int16, device=devices.CPU, ctx=None, strong=None, requires_grad=False): 
+        return cls(None, shape, dtype, device, ctx, requires_grad, strong)
     @classmethod
-    def empty(cls, shape, dtype=dtypes.int16, device=devices.CPU, ctx=None, strong=None, requires_grad=False): return cls(None, shape, dtype, device, ctx, requires_grad, strong)
+    def rand(cls, shape, dtype=dtypes.float16, device=devices.CPU, ctx=None, strong=None, requires_grad=False): 
+        return cls(rand_array_from_shape(shape), shape, dtype, device, ctx, requires_grad, strong)
+    @classmethod    
+    def ones_like(cls, self): 
+        return cls.ones(self.shape, self.dtype, self.device, self.ctx, self.requires_grad, self.strong)
     @classmethod
-    def rand(cls, shape, dtype=dtypes.float16, device=devices.CPU, ctx=None, strong=None, requires_grad=False): return cls(rand_array_from_shape(shape), shape, dtype, device, ctx, requires_grad, strong)
-    @classmethod
-    def ones_like(cls, self): return cls.ones(self.shape, self.dtype, self.device, self.ctx, self.requires_grad, self.strong)
-    @classmethod
-    def zeros_like(cls, self): return cls.zeros(self.shape, self.dtype, self.device, self.ctx, self.requires_grad, self.strong)
+    def zeros_like(cls, self): 
+        return cls.zeros(self.shape, self.dtype, self.device, self.ctx, self.requires_grad, self.strong)
     @classmethod
     def eye(cls, rows, colns = None, dtype=dtypes.int16, device=devices.CPU, ctx=None, strong=None, requires_grad=False): 
         if colns is None: colns = rows
@@ -101,9 +106,10 @@ class Tensor():
     
     
     #on self ops
-    def check(self): 
-        assert self.data == [round(e, self.dtype.precision) if self.dtype.precision is not None else e for e in self.data],"check falied on dtype"
+    def check(self):
+        assert all([e.__class__ == self.dtype.eq for e in self.data]), "check failed on dtype" 
         assert len(self.data) == math.prod(self.shape), "check failed on shape"
+        print("Tensor object in optimal state")
         
     def setdata(self, val: Union[int, float, bool]): self.data = _set(self.data, val)
     #TODO: expand the tensor in a axis
@@ -118,34 +124,33 @@ class Tensor():
     #dot product
     def dot(self, other, axis): pass
     #add elemens in a single axis
-    def sum(self, axis=None):
-        if axis is None: return sum(self.data)
-        elif axis +1== len(self.shape): 
-            numelem = self.shape[axis]
-            return [[sum(self.data[i:i + numelem])] for i in range(0, len(self.data)-numelem+1, numelem)]
-        else: 
-            assert axis < len(self.shape), "dimension doesn't exist"
-    #mul elemens in a single axis
-    def mul(self, axis=None):
-        if axis is None: return math.prod(self.data)
-        elif axis +1== len(self.shape): 
-            numelem = self.shape[axis]
-            return [[math.prod(self.data[i:i + numelem])] for i in range(0, len(self.data)-numelem+1, numelem)]
-        else:
-            assert axis < len(self.shape), "dimension doesn't exist"
-    #min along an axis or of a Tensor
-    def min(self, axis=None):
-        if axis is None: return min(self.data)
-        elif axis +1== len(self.shape): 
-            numelem = self.shape[axis]
-            return [[min(self.data[i:i + numelem])] for i in range(0, len(self.data)-numelem+1, numelem)]
-        else:
-            assert axis < len(self.shape), "dimension doesn't exist"
-    #max along an axis or of a Tensor
-    def max(self, axis=None): 
+    def sum(self, axis=None, l=None, d=1):
         if axis is None: return max(self.data)
-        elif axis +1== len(self.shape): 
-            numelem = self.shape[axis]
-            return [[max(self.data[i:i + numelem])] for i in range(0, len(self.data)-numelem+1, numelem)]
-        else:
-            assert axis < len(self.shape), "dimension doesn't exist"
+        if l is None: l = self.tolist()
+        assert axis < len(self.shape), "dimension doesn't exist"
+        reduced = Tensor(build_tensor(axis, l, d, sum)) if axis != 0 else Tensor([map_along_axis(self.tolist(), sum)])
+        reduced.shape = tuple(1 if i==axis else e for i, e in enumerate(self.shape))
+        return reduced
+    #mul elemens in a single axis
+    def mul(self, axis=None, l=None, d=1):
+        if axis is None: return max(self.data)
+        assert axis < len(self.shape), "dimension doesn't exist"
+        if l is None: l = self.tolist()
+        reduced = Tensor(build_tensor(axis, l, d, math.prod)) if axis != 0 else Tensor([map_along_axis(self.tolist(), sum)])
+        reduced.shape = tuple(1 if i==axis else e for i, e in enumerate(self.shape))
+        return reduced    #min along an axis or of a Tensor
+    def min(self, axis=None, l=None, d=1):
+        if axis is None: return max(self.data)
+        assert axis < len(self.shape), "dimension doesn't exist"
+        if l is None: l = self.tolist()
+        reduced = Tensor(build_tensor(axis, l, d, min)) if axis != 0 else Tensor([map_along_axis(self.tolist(), sum)])
+        reduced.shape = tuple(1 if i==axis else e for i, e in enumerate(self.shape))
+        return reduced
+    #max along an axis or of a Tensor
+    def max(self, axis=None, l=None, d=1): 
+        if axis is None: return max(self.data)
+        assert axis < len(self.shape), "dimension doesn't exist"
+        if l is None: l = self.tolist()
+        reduced = Tensor(build_tensor(axis, l, d, max)) if axis != 0 else Tensor([map_along_axis(self.tolist(), sum)])
+        reduced.shape = tuple(1 if i==axis else e for i, e in enumerate(self.shape))
+        return reduced                  
