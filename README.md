@@ -1,4 +1,4 @@
-<b>lalagrad</b>
+#lalagrad
 <img style="float: left" src=./lalagrad/utils/img/lala.jpeg alt=drawing width=200/>
 <b>This will be a mid-level Deep learning framework</b></br>
 <br><br><b>For Educational purposes mainly</b><br>
