@@ -7,19 +7,20 @@ from lalagrad.device import Device ,devices
 from lalagrad.ops import binary_op_wrapper, unary_op_wrapper
 from lalagrad.array_ops import flatten, array_from_shape, add_const,\
     shape_from_array, reverse, scale, devide_array, _set, rand_array_from_shape,\
-    map_along_axis, build_tensor
-
-class Tensor():
-    __slots__ = "data", "device", "shape", "dtype", "ctx", "strong", "mat", "requires_grad", "grad"
-    class Matrix:
-        #TODO: implement matrix multiplication 
-        def matmul(self, other):
-            return [[0]]
+    map_along_axis, build_higher_dim
     
-    def __init__(self, data: Optional[Union[None, List, int, float, bool]]=None, shape: tuple[int]=None, dtype: Optional[DType]=None, 
+
+        
+class Tensor():
+    __slots__ = "data", "device", "shape", "dtype", "ctx", "strong", "requires_grad", "grad"
+    
+    def __init__(self, data: Union[None, List, np.ndarray]=None, shape: tuple[int]=None, dtype: Optional[DType]=None, 
                  device: Device=devices.CPU, ctx = None, requires_grad=False, strong: bool=True):
         assert data is not None or shape is not None, "Tensor object requires atleast a data or a shape"
         if data is None: self.data, self.shape = None, shape
+        elif isinstance(data, np.ndarray): 
+            self.data = data, self.dtype = data.tolist(), TYPES_DICT[data.dtype.name] 
+            self.shape = tuple(reverse(shape_from_array(data)))                                                                                       
         else:   
             assert (all([isinstance(r, (list, tuple)) for r in data]) or shape) and len(data), "improper data" #Scalars and Vectors are not supported yet
             self.data, self.shape = flatten(data), tuple(reverse(shape_from_array(data)))
@@ -27,7 +28,6 @@ class Tensor():
         self.dtype =  next((v for  v in TYPES_DICT.values() if v.eq == self.data[0].__class__), None) if dtype is None else dtype    
         self.device, self.strong, self.ctx, self.requires_grad = device, strong, ctx, requires_grad
         self.grad: Optional[Tensor] = None
-        self.mat = Tensor.Matrix() if len(self.shape) == 2 else None
         
     @classmethod
     def zeros(cls, shape, dtype=dtypes.int16, device=devices.CPU, ctx=None, strong=None, requires_grad=False): 
@@ -53,6 +53,9 @@ class Tensor():
         data = [[1 if j==i else 0 for j in range(colns)] for i in range(rows)]
         return  cls(data, dtype=dtype, device=device, ctx=ctx, requires_grad=requires_grad, strong=strong)
     
+    def onself(self): return self
+    def __enter__(self): self.strong = False 
+    def __exit__(self, *args): self.strong = True
     
     #get the data with right dimension (unflatten)
     def tolist(self, l=None, n=0):
@@ -81,11 +84,11 @@ class Tensor():
     def __mul__(self, other): return [x*y for x, y in zip(self.data, other.data)]
     @binary_op_wrapper
     def __div__(self, other): return [round(x/y, self.dtype.precision) if self.dtype.precision is not None else x/y for x, y in zip(self.data, other.data)]
-    def matmul(self, other):  
-        assert self.mat is not None and other.mat is not None,\
-        "matrix multiplication only for 2D Tensors (Matrices)"
-        return Tensor(data=self.mat.matmul(other.mat))
-    
+    def dot(self, other):
+        assert len(self.shape) == len(other.shape) == 2 and (1 in self.shape and 1 in other.shape), "dot is defined only for vectors"
+        return sum([x*y for x, y in zip(self.data, other.data)])
+    #TODO: matrix mutiplication
+    def matmul(self, other): pass 
     #Order
     def __eq__(self, other): return self.dtype == other.dtype and self.shape == other.shape
     
@@ -120,37 +123,31 @@ class Tensor():
         self.mat = Tensor.Matrix() if len(shape) == 2 else None
         self.shape = tuple(shape)
     
-    #TODO: reduce Ops  
-    #dot product
-    def dot(self, other, axis): pass
+    
     #add elemens in a single axis
-    def sum(self, axis=None, l=None, d=1):
+    def sum(self, axis=None):
         if axis is None: return max(self.data)
-        if l is None: l = self.tolist()
         assert axis < len(self.shape), "dimension doesn't exist"
-        reduced = Tensor(build_tensor(axis, l, d, sum)) if axis != 0 else Tensor([map_along_axis(self.tolist(), sum)])
+        reduced = Tensor(build_higher_dim(axis, self.tolist(), sum)) if axis != 0 else Tensor([map_along_axis(self.tolist(), sum)])
         reduced.shape = tuple(1 if i==axis else e for i, e in enumerate(self.shape))
         return reduced
     #mul elemens in a single axis
-    def mul(self, axis=None, l=None, d=1):
+    def mul(self, axis=None):
         if axis is None: return max(self.data)
         assert axis < len(self.shape), "dimension doesn't exist"
-        if l is None: l = self.tolist()
-        reduced = Tensor(build_tensor(axis, l, d, math.prod)) if axis != 0 else Tensor([map_along_axis(self.tolist(), sum)])
+        reduced = Tensor(build_higher_dim(axis, self.tolist(), math.prod)) if axis != 0 else Tensor([map_along_axis(self.tolist(), math.prod)])
         reduced.shape = tuple(1 if i==axis else e for i, e in enumerate(self.shape))
         return reduced    #min along an axis or of a Tensor
-    def min(self, axis=None, l=None, d=1):
+    def min(self, axis=None):
         if axis is None: return max(self.data)
         assert axis < len(self.shape), "dimension doesn't exist"
-        if l is None: l = self.tolist()
-        reduced = Tensor(build_tensor(axis, l, d, min)) if axis != 0 else Tensor([map_along_axis(self.tolist(), sum)])
+        reduced = Tensor(build_higher_dim(axis, self.tolist(), min)) if axis != 0 else Tensor([map_along_axis(self.tolist(), max)])
         reduced.shape = tuple(1 if i==axis else e for i, e in enumerate(self.shape))
         return reduced
     #max along an axis or of a Tensor
-    def max(self, axis=None, l=None, d=1): 
+    def max(self, axis=None): 
         if axis is None: return max(self.data)
         assert axis < len(self.shape), "dimension doesn't exist"
-        if l is None: l = self.tolist()
-        reduced = Tensor(build_tensor(axis, l, d, max)) if axis != 0 else Tensor([map_along_axis(self.tolist(), sum)])
+        reduced = Tensor(build_higher_dim(axis, self.tolist(), max)) if axis != 0 else Tensor([map_along_axis(self.tolist(), min)])
         reduced.shape = tuple(1 if i==axis else e for i, e in enumerate(self.shape))
         return reduced                  

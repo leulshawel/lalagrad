@@ -1,7 +1,8 @@
 #some usable funcs and classes not directly related to any object
 from typing import List, Union, Tuple
 from lalagrad.dtype import DType
-import random
+import random, math
+
 
 
 def get_shape(data: List[Union[int, float, bool, List]]): pass
@@ -21,6 +22,7 @@ def add_const(l: Union[List, Tuple], c: Union[int, float, bool, DType]): return 
 def scale(l: Union[List, Tuple], c: Union[int, float, bool, DType]): return [scale(e, c) if isinstance(e, (list, tuple)) else e*c for e in l]
 #set every element to a value
 def _set (l: Union[List, Tuple], val: Union[int, float, bool, DType]=0): return [_set(e, val) if isinstance(e, (list, tuple)) else val for e in l]
+
 #normal list.reverse() doesn't return
 def reverse(l): 
     l.reverse()
@@ -40,8 +42,8 @@ def map_along_axis(l: Union[Tuple, List], f):
     shape = shape_from_array(l[0]) 
     assert all([shape_from_array(sub_l) == shape for sub_l in l])
     return [f([ll[i] for ll in l]) for i in range(len(l[0]))] if isinstance(l[0][0], (int, float)) else [map_along_axis([ll[i] for ll in l], f) for i in range(len(l[0]))]
-
-def build_tensor(axis, l, d, f):
-        return [map_along_axis(ll, f) if d == axis else build_tensor(axis, ll, d+1, f) for ll in l]
+#builds all the higher dimensions of the a tensor and pults the results of a lower dimension op in them
+def build_higher_dim(axis, l, f, d=1):
+        return [map_along_axis(ll, f) if d == axis else build_higher_dim(axis, ll, f, d+1) for ll in l]
 
     
