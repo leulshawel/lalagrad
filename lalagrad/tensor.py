@@ -19,8 +19,8 @@ class Tensor():
         assert data is not None or shape is not None, "Tensor object requires atleast a data or a shape"
         if data is None: self.data, self.shape, self.dtype = None, shape, None
         elif isinstance(data, np.ndarray): 
-            self.data = data, self.dtype = data.tolist(), TYPES_DICT[data.dtype.name] 
-            self.shape = tuple(reverse(shape_from_array(data)))                                                                                       
+            data, self.dtype = data.tolist(), TYPES_DICT[data.dtype.name] 
+            self.data, self.shape = flatten(data), tuple(reverse(shape_from_array(data)))                                                                                       
         elif isinstance(data, (list, tuple)):   
             assert (all([isinstance(r, (list, tuple)) for r in data]) or shape) and len(data), "improper data" #Scalars and Vectors are not supported yet
             self.data, self.shape = flatten(data), tuple(reverse(shape_from_array(data)))
@@ -36,22 +36,24 @@ class Tensor():
     def ones(cls, shape, dtype=dtypes.int16, device=devices.CPU, ctx=None, strong=None, requires_grad=False): 
         return cls(array_from_shape(shape, 1), shape, dtype, device, ctx, requires_grad, strong)
     @classmethod
+    def full(cls, val, shape, dtype=dtypes.int16, device=devices.CPU, ctx=None, strong=None, requires_grad=False): 
+        return cls(array_from_shape(shape, val), shape, dtype, device, ctx, requires_grad, strong)
+    @classmethod
     def empty(cls, shape, dtype=dtypes.int16, device=devices.CPU, ctx=None, strong=None, requires_grad=False): 
         return cls(None, shape, dtype, device, ctx, requires_grad, strong)
     @classmethod
     def rand(cls, shape, dtype=dtypes.float16, device=devices.CPU, ctx=None, strong=None, requires_grad=False): 
         return cls(rand_array_from_shape(shape), shape, dtype, device, ctx, requires_grad, strong)
-    @classmethod    
-    def ones_like(cls, self): 
-        return cls.ones(self.shape, self.dtype, self.device, self.ctx, self.requires_grad, self.strong)
-    @classmethod
-    def zeros_like(cls, self): 
-        return cls.zeros(self.shape, self.dtype, self.device, self.ctx, self.requires_grad, self.strong)
     @classmethod
     def eye(cls, rows, colns = None, dtype=dtypes.int16, device=devices.CPU, ctx=None, strong=None, requires_grad=False): 
         if colns is None: colns = rows
         data = [[1 if j==i else 0 for j in range(colns)] for i in range(rows)]
         return  cls(data, dtype=dtype, device=device, ctx=ctx, requires_grad=requires_grad, strong=strong)
+    def ones_like(self): 
+        return Tensor.ones(self.shape, self.dtype, self.device, self.ctx, self.requires_grad, self.strong)
+    def zeros_like(self): 
+        return Tensor.zeros(self.shape, self.dtype, self.device, self.ctx, self.requires_grad, self.strong)
+    
     
     def __call__(self): return self
     def __enter__(self): self.strong = False 
@@ -120,10 +122,9 @@ class Tensor():
     def transpose(self, axis1, axis2): self.shape[axis1], self.shape2 = self.shape[axis2], self.shape[axis1]
     def reshape(self, shape):
         assert math.prod(self.shape) == math.prod(shape), "Tensor can't be of this shape"
-        self.mat = Tensor.Matrix() if len(shape) == 2 else None
         self.shape = tuple(shape)
     
-    
+    #reduce ops
     #add elemens in a single axis
     def sum(self, axis=None):
         if axis is None: return max(self.data)
