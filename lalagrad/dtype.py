@@ -1,7 +1,7 @@
 from typing import Final, Optional, Union
 from dataclasses import dataclass
 
-@dataclass(order=True, frozen=True, repr=False)
+@dataclass(order=False, frozen=True, repr=False)
 class DType:
     strength: int #higher strength type will be the type of op results
     bytes: int #How many bytes does it take
@@ -11,7 +11,8 @@ class DType:
     precision: Optional[int]
     
     def __repr__(self): return f"<dtype: {self.name}({self.fmt})>"
-    
+    def __lt__(self, other): return self.strength < other.strength
+    def __gt__(self, other): return self.strength > other.strength
   
 #Common data types  
 class dtypes:

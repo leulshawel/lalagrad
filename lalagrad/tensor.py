@@ -17,15 +17,15 @@ class Tensor():
     def __init__(self, data: Union[None, List, np.ndarray]=None, shape: tuple[int]=None, dtype: Optional[DType]=None, 
                  device: Device=devices.CPU, ctx = None, requires_grad=False, strong: bool=True):
         assert data is not None or shape is not None, "Tensor object requires atleast a data or a shape"
-        if data is None: self.data, self.shape = None, shape
+        if data is None: self.data, self.shape, self.dtype = None, shape, None
         elif isinstance(data, np.ndarray): 
             self.data = data, self.dtype = data.tolist(), TYPES_DICT[data.dtype.name] 
             self.shape = tuple(reverse(shape_from_array(data)))                                                                                       
-        else:   
+        elif isinstance(data, (list, tuple)):   
             assert (all([isinstance(r, (list, tuple)) for r in data]) or shape) and len(data), "improper data" #Scalars and Vectors are not supported yet
             self.data, self.shape = flatten(data), tuple(reverse(shape_from_array(data)))
-        
-        self.dtype =  next((v for  v in TYPES_DICT.values() if v.eq == self.data[0].__class__), None) if dtype is None else dtype    
+            self.dtype =  next((v for  v in TYPES_DICT.values() if v.eq == self.data[0].__class__), None) if dtype is None else dtype 
+
         self.device, self.strong, self.ctx, self.requires_grad = device, strong, ctx, requires_grad
         self.grad: Optional[Tensor] = None
         
@@ -53,7 +53,7 @@ class Tensor():
         data = [[1 if j==i else 0 for j in range(colns)] for i in range(rows)]
         return  cls(data, dtype=dtype, device=device, ctx=ctx, requires_grad=requires_grad, strong=strong)
     
-    def onself(self): return self
+    def __call__(self): return self
     def __enter__(self): self.strong = False 
     def __exit__(self, *args): self.strong = True
     
@@ -83,14 +83,14 @@ class Tensor():
     @binary_op_wrapper
     def __mul__(self, other): return [x*y for x, y in zip(self.data, other.data)]
     @binary_op_wrapper
-    def __div__(self, other): return [round(x/y, self.dtype.precision) if self.dtype.precision is not None else x/y for x, y in zip(self.data, other.data)]
+    def __truediv__(self, other): return [(round(x/y, self.dtype.precision) if self.dtype > other.dtype else round(x/y, other.dtype.precision)) if self.dtype is not None and other.dtype is not None else x/y for x, y in zip(self.data, other.data)]
+    def __eq__(self, other): return self.dtype == other.dtype and self.shape == other.shape
     def dot(self, other):
         assert len(self.shape) == len(other.shape) == 2 and (1 in self.shape and 1 in other.shape), "dot is defined only for vectors"
         return sum([x*y for x, y in zip(self.data, other.data)])
     #TODO: matrix mutiplication
     def matmul(self, other): pass 
-    #Order
-    def __eq__(self, other): return self.dtype == other.dtype and self.shape == other.shape
+    def tensordot(self, other, dims): pass
     
     #on self or return unaryOps
     @unary_op_wrapper
