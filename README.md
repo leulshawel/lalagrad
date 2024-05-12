@@ -4,7 +4,7 @@ between tinygrad and a micrograd
 
 <br><br>
 <b>Tensors</b><br>
-most tensor creation methods and operations supported by [@tinygrad](https://github.com/tinygrad/tinygrad)<br>will be here (may be all of them) look at lalagrad/tensor.py
+most tensor creation methods and operations supported by [@tinygrad](https://github.com/tinygrad/tinygrad) will be here (may be all of them) look at lalagrad/tensor.py
 
 ```python
 from lalagrad import Tensor
@@ -47,15 +47,11 @@ class FCFF:
             x = x.matmul(l) + b
         return x
     
-
 if __name__ == "__main__":
     #Model
-    inp , hidd, out = [3], [4, 3], [2]
-    nn = FCFF(inp + hidd + out)
-    
-    #Input data
+    nn = FCFF([3, 2, 1])
+
     x = Tensor([[1, 0, 1]])
-    #Feed forward
     r = nn.forward(x)
     
     print(r.tolist()) 
