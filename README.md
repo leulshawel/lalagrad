@@ -9,7 +9,6 @@ most tensor creation methods and operations supported by [@tinygrad](https://git
 ```python
 from lalagrad import Tensor
 
-#there are different ways to create a tensor
 x = Tensor.eye(3)       #identity matrice of shape (3, 3)
 
 #from np ndarray
@@ -29,5 +28,35 @@ with x():   #do with y(): to put the result on y
 print(x.sum())
 print(y.sum(axis=0).tolist())
 print(z.max(axis=1).tolist())                  
+```
 
+<br><b>Feed Forward </b>with no backprob
+
+```python
+#at this point we can implement a simple fully connected feed forward nn without backprop
+
+from lalagrad import Tensor
+from typing import Union, List, Tuple
+
+class FCFF:
+    def __init__(self, layers: Union[List, Tuple]):
+        self.weights = [Tensor.rand(shape=(layers[i-1], layers[i])) for i in range(1, len(layers))]
+        self.biases = [Tensor.rand(shape=(1, layers[i])) for i in range(1, len(layers))]
+    def forward(self, x: Tensor):
+        for l, b in zip(self.weights, self.biases):
+            x = x.matmul(l) + b
+        return x
+    
+
+if __name__ == "__main__":
+    #Model
+    inp , hidd, out = [3], [4, 3], [2]
+    nn = FCFF(inp + hidd + out)
+    
+    #Input data
+    x = Tensor([[1, 0, 1]])
+    #Feed forward
+    r = nn.forward(x)
+    
+    print(r.tolist()) 
 ```
