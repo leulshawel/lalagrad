@@ -3,7 +3,7 @@
 between tinygrad and a micrograd
 
 <br><br>
-<b>Tensors</b>
+<b>Tensors</b><br>
 most tensor creation methods and operations supported by tinygrad<br>will be here (may be all of them) look at lalagrad/tensor.py
 
 ```python
