@@ -1,14 +1,15 @@
 <img style="float: left" src=./lalagrad/utils/img/lala.jpeg alt=drawing width=200/>
 <b>lalagrad</b> will be a mid-level Deep learning framework for Educational purposes mainly
-between tinygrad and a micrograd
+<br>between tinygrad and a micrograd...closer to the tiny :)
 
 <br><br>
 <b>Tensors</b><br>
-most tensor creation methods and operations supported by tinygrad<br>will be here (may be all of them) look at lalagrad/tensor.py
+most tensor creation methods and operations supported by @tinygrad<br>will be here (may be all of them) look at lalagrad/tensor.py
 
 ```python
 from lalagrad import Tensor
 
+#there are different ways to create a tensor
 x = Tensor.eye(3)       #identity matrice of shape (3, 3)
 
 #from np ndarray
