@@ -8,7 +8,6 @@ import numpy as np
 from typing import Optional, Union, List
 import math
 
-from lalagrad.autograd import Graph
 from lalagrad.nn import Acts
 from lalagrad.dtype import DType, dtypes, TYPES_DICT
 from lalagrad.device import Device ,devices
