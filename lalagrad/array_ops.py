@@ -4,7 +4,6 @@ from lalagrad.dtype import DType
 import random
 
 
-
 def get_shape(data: List[Union[int, float, bool, List]]): pass
 #from tinygrad.tensor
 def flatten(l: Union[List, Tuple]): return [item for sublist in l for item in (flatten(sublist) if isinstance(sublist, (tuple, list)) else [sublist])]
