@@ -4,7 +4,7 @@
 
 <br><br>
 <b>Tensors</b><br>
-most tensor creation methods and operations supported by @tinygrad<br>will be here (may be all of them) look at lalagrad/tensor.py
+most tensor creation methods and operations supported by [@tinygrad](https://github.com/tinygrad/tinygrad)<br>will be here (may be all of them) look at lalagrad/tensor.py
 
 ```python
 from lalagrad import Tensor
