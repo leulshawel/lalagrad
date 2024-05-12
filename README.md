@@ -4,41 +4,29 @@ between tinygrad and a micrograd
 
 <br><br>
 <b>Tensors</b>
+most tensor creation methods and operations supported by tinygrad<br>will be here (may be all of them) look at lalagrad/tensor.py
 
 ```python
-from lalagrad.tensor import Tensor
+from lalagrad import Tensor
 
+x = Tensor.eye(3)       #identity matrice of shape (3, 3)
 
-#normal tensor creation
-x = Tensor(data=[[3, 4, 5, 1]]) # x.shape => (1, 4)
-
- # Create from numpy ndarray
+#from np ndarray
 import numpy as np
-array = np.array([[10, 12, 14, 2]])
-y = Tensor(data=array) 
-yt = y.transpose()                           # a column matrice (4, 1)
-        
+y = Tensor(np.array([[2.0, 0, -2.0]]))
 
-y_like = y.zeros_like()                     # create a tensor like y but filled_with zeros
-identity = Tensor.eye(4)                    #identity matrice of (4, 4) shape
-f = Tensor.full(val=5, shape=(3, 3))
+y = y.transpose()
+z = x.matmul(y)
 
-#element wise Ops
-z = x + y
+#reshape
+y.reshape((3, 1))
 
-#you wanna add the two and save the result in one of them
-with x(): #or with y(): to save the result on y
-    x + y
+#if u wanna put the returns of your ops on one of the operands
+with x():   #do with y(): to put the result on y
+    x + z
     
-#on self Ops
-x.reshape((2, 2))
-yt.reshape((2, 2))
-
-#matrice Ops 
-z = x.matmul(yt)
-
-#reduce OPs (axis wise ops)
-m = z.max(axis=1)  
-print(m.tolist())                      
+print(x.sum())
+print(y.sum(axis=0).tolist())
+print(z.max(axis=1).tolist())                  
 
 ```

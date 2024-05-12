@@ -158,15 +158,15 @@ class Tensor():
         reduced.shape = tuple(1 if i==axis else e for i, e in enumerate(self.shape))
         return reduced    #min along an axis or of a Tensor
     def min(self, axis=None):
-        if axis is None: return max(self.data)
+        if axis is None: return min(self.data)
         assert axis < len(self.shape), "dimension doesn't exist"
-        reduced = Tensor(build_higher_dim(axis, self.tolist(), min)) if axis != 0 else Tensor([map_along_axis(self.tolist(), max)])
+        reduced = Tensor(build_higher_dim(axis, self.tolist(), min)) if axis != 0 else Tensor([map_along_axis(self.tolist(), min)])
         reduced.shape = tuple(1 if i==axis else e for i, e in enumerate(self.shape))
         return reduced
     #max along an axis or of a Tensor
     def max(self, axis=None): 
         if axis is None: return max(self.data)
         assert axis < len(self.shape), "dimension doesn't exist"
-        reduced = Tensor(build_higher_dim(axis, self.tolist(), max)) if axis != 0 else Tensor([map_along_axis(self.tolist(), min)])
+        reduced = Tensor(build_higher_dim(axis, self.tolist(), max)) if axis != 0 else Tensor([map_along_axis(self.tolist(), max)])
         reduced.shape = tuple(1 if i==axis else e for i, e in enumerate(self.shape))
         return reduced                  

@@ -39,7 +39,7 @@ def devide_array(l: Union[List, Tuple], n: int):
 #map a function on corresponding elements along a dimentsion
 def map_along_axis(l: Union[Tuple, List], f):
     _class = l[0].__class__
-    assert all([e.__class__ == _class for e in l])
+    #assert all([e.__class__ == _class for e in l])
     if isinstance(l[0], (int, float)): return [f(l)]
     shape = shape_from_array(l[0]) 
     assert all([shape_from_array(sub_l) == shape for sub_l in l])
