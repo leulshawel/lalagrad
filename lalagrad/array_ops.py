@@ -23,7 +23,7 @@ def scale(l: Union[List, Tuple], c: Union[int, float, bool, DType]): return [sca
 #set every element to a value
 def _set (l: Union[List, Tuple], val: Union[int, float, bool, DType]=0): return [_set(e, val) if isinstance(e, (list, tuple)) else val for e in l]
 #dot product
-def _dot(l1, l2): 
+def _dot(l1, l2):
     return sum([x*y for x, y in zip(l1, l2)])
 #normal list.reverse() doesn't return
 def reverse(l): 

@@ -6,11 +6,12 @@ def binary_op_wrapper(func):
             _class = self.__class__
             #new Tensor with the result of the op
             strongest_dtype = self.dtype if self.dtype > other.dtype else other.dtype
-            new = _class(data=None, shape=self.shape, dtype=strongest_dtype, device=self.device, requires_grad=self.requires_grad or other.requires_grad)
-            new.data = func(self, other) 
+            data, shape = func(self, other)
+            new = _class(data=None, shape=shape, dtype=strongest_dtype, device=self.device, requires_grad=self.requires_grad or other.requires_grad)
+            new.data = data
             if self.strong and other.strong: return  new #return new if both are strong tensors
             if self.strong: other.data, other.dtype = func(self, other), strongest_dtype
-            else: self.data, self.dtype = func(self, other), strongest_dtype  
+            else: self.data, self.dtype = data, strongest_dtype  
         return wrapper
     
     
@@ -19,9 +20,9 @@ def unary_op_wrapper(func):
     def wrapper(self, other):
         assert self.data is not None, "Op on Empty Tensor"
         _class = self.__class__
-        new = _class(data=None, device=self.device, requires_grad=self.requires_grad) 
-        new.data = func(self, other)
+        data, shape = func(self, other)
+        new = _class(data=None, shape=shape, device=self.device, requires_grad=self.requires_grad) 
+        new.data, new.dtype = data, self.dtype if self.dtype > new.dtype else new.dtype
         if self.strong: return new
-        self.data = func(self, other)
-        self.dtype = self.dtype if self.dtype.strength > new.dtype.strength else new.dtype
+        self.data = data
     return wrapper
