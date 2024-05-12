@@ -1,7 +1,7 @@
 #some usable funcs and classes not directly related to any object
 from typing import List, Union, Tuple
 from lalagrad.dtype import DType
-import random, math
+import random
 
 
 
@@ -9,10 +9,10 @@ def get_shape(data: List[Union[int, float, bool, List]]): pass
 #from tinygrad.tensor
 def flatten(l: Union[List, Tuple]): return [item for sublist in l for item in (flatten(sublist) if isinstance(sublist, (tuple, list)) else [sublist])]
 #generate an array from a shape
-def array_from_shape(shape: Union[List, tuple, int], val=0): return [val for _ in range(shape[0])] if len(shape)==1 \
+def array_from_shape(shape: Union[List, tuple], val=0): return [val for _ in range(shape[0])] if len(shape)==1 \
     else [array_from_shape(shape[1:], val) for _ in range(shape[0])]
 #random vals
-def rand_array_from_shape(shape: Union[List, tuple, int], p=4): return [round(random.random(), p)for _ in range(shape[0])] if len(shape)==1 \
+def rand_array_from_shape(shape: Union[List, tuple], p=4): return [round(random.random()-0.5, p)for _ in range(shape[0])] if len(shape)==1 \
     else [rand_array_from_shape(shape[1:], p) for _ in range(shape[0])]
 #get shape from array assuming you provided the right tensor and return is in reverse order
 def shape_from_array(l: Union[List, Tuple]): return shape_from_array(l[0]) + [len(l)] if isinstance(l[0], (tuple, list)) else [len(l)]
@@ -39,7 +39,7 @@ def devide_array(l: Union[List, Tuple], n: int):
 #map a function on corresponding elements along a dimentsion
 def map_along_axis(l: Union[Tuple, List], f):
     _class = l[0].__class__
-    #assert all([e.__class__ == _class for e in l])
+    assert all([e.__class__ == _class for e in l])
     if isinstance(l[0], (int, float)): return [f(l)]
     shape = shape_from_array(l[0]) 
     assert all([shape_from_array(sub_l) == shape for sub_l in l])

@@ -8,6 +8,8 @@ import numpy as np
 from typing import Optional, Union, List
 import math
 
+from lalagrad.autograd import Graph
+from lalagrad.nn import Acts
 from lalagrad.dtype import DType, dtypes, TYPES_DICT
 from lalagrad.device import Device ,devices
 from lalagrad.ops import binary_op_wrapper, unary_op_wrapper
@@ -16,12 +18,13 @@ from lalagrad.array_ops import flatten, array_from_shape, add_const,\
     map_along_axis, build_higher_dim, _dot
     
 
-#a tensor needs to be atleast 2D (a matrice);     a vector is a row or column matrice
-class Tensor():
+#a tensor needs to be atleast 2D (a matrice);    
+# a vector is a row or column matrice and scalar is a (1, 1) matrice
+class Tensor:
     
     __slots__ = "data", "device", "shape", "dtype", "ctx", "strong", "requires_grad", "grad"
     
-    def __init__(self, data: Union[None, List, np.ndarray]=None, shape: tuple[int]=None, dtype: Optional[DType]=None, 
+    def __init__(self, data: Union[None, List, np.ndarray]=None, shape: Union[None, tuple[int]]=None, dtype: Optional[DType]=None, 
                  device: Device=devices.CPU, ctx = None, requires_grad=False, strong: bool=True):
         #data or shape is a must
         assert data is not None or shape is not None, "Tensor object requires atleast a data or a shape"
@@ -39,7 +42,6 @@ class Tensor():
         self.device, self.strong, self.ctx, self.requires_grad = device, strong, ctx, requires_grad
         self.grad: Optional[Tensor] = None
         
-
         
     @staticmethod
     def zeros(shape, dtype=dtypes.int16, device=devices.CPU, ctx=None, strong=True, requires_grad=False): 
@@ -146,29 +148,38 @@ class Tensor():
     #reduce ops
     #add elemens in a single axis
     def sum(self, axis=None):
-        if axis is None: return max(self.data)
+        if axis is None: return Tensor([[sum(self.data)]])
         assert axis < len(self.shape), "dimension doesn't exist"
         reduced = Tensor(build_higher_dim(axis, self.tolist(), sum)) if axis != 0 else Tensor([map_along_axis(self.tolist(), sum)])
         reduced.shape = tuple(1 if i==axis else e for i, e in enumerate(self.shape))
         return reduced
     #mul elemens in a single axis
     def mul(self, axis=None):
-        if axis is None: return max(self.data)
+        if axis is None: return Tensor([[math.prod(self.data)]])
         assert axis < len(self.shape), "dimension doesn't exist"
         reduced = Tensor(build_higher_dim(axis, self.tolist(), math.prod)) if axis != 0 else Tensor([map_along_axis(self.tolist(), math.prod)])
         reduced.shape = tuple(1 if i==axis else e for i, e in enumerate(self.shape))
         return reduced    #min along an axis or of a Tensor
     def min(self, axis=None):
-        if axis is None: return min(self.data)
+        if axis is None: return Tensor([[min(self.data)]])
         assert axis < len(self.shape), "dimension doesn't exist"
         reduced = Tensor(build_higher_dim(axis, self.tolist(), min)) if axis != 0 else Tensor([map_along_axis(self.tolist(), min)])
         reduced.shape = tuple(1 if i==axis else e for i, e in enumerate(self.shape))
         return reduced
     #max along an axis or of a Tensor
     def max(self, axis=None): 
-        if axis is None: return max(self.data)
+        if axis is None: return Tensor([[max(self.data)]])
         assert axis < len(self.shape), "dimension doesn't exist"
         reduced = Tensor(build_higher_dim(axis, self.tolist(), max)) if axis != 0 else Tensor([map_along_axis(self.tolist(), max)])
         reduced.shape = tuple(1 if i==axis else e for i, e in enumerate(self.shape))
         return reduced   
+
+    #MAP a function on a Tensor (for activation functions)
+    def _map(self, f): self.data = f(self.data)
+    def Relu(self): self.data = Acts.Relu(self.data)
+    def Tanh(self): self.data = Acts.Tanh(self.data)
+    def Sigmoid(self): self.data = Acts.Sigmoid(self.data)
+    def Softmax(self): self.data = Acts.Softmax(self.data)
+    def Signum(self): self.data = Acts.Signum(self.data)
+
     
