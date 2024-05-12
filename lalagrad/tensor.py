@@ -1,28 +1,31 @@
 import numpy as np
 from typing import Optional, Union, List
-import math, numpy
+import math
 
 from lalagrad.dtype import DType, dtypes, TYPES_DICT
 from lalagrad.device import Device ,devices
 from lalagrad.ops import binary_op_wrapper, unary_op_wrapper
 from lalagrad.array_ops import flatten, array_from_shape, add_const,\
     shape_from_array, reverse, scale, devide_array, _set, rand_array_from_shape,\
-    map_along_axis, build_higher_dim
+    map_along_axis, build_higher_dim, _dot
     
 
-        
+#a tensor needs to be atleast 2D (a matrice);     a vector is a row or column matrice
 class Tensor():
     __slots__ = "data", "device", "shape", "dtype", "ctx", "strong", "requires_grad", "grad"
     
     def __init__(self, data: Union[None, List, np.ndarray]=None, shape: tuple[int]=None, dtype: Optional[DType]=None, 
                  device: Device=devices.CPU, ctx = None, requires_grad=False, strong: bool=True):
+        #data or shape is a must
         assert data is not None or shape is not None, "Tensor object requires atleast a data or a shape"
         if data is None: self.data, self.shape, self.dtype = None, shape, None
+        #create from numpy ndarray
         elif isinstance(data, np.ndarray): 
             data, self.dtype = data.tolist(), TYPES_DICT[data.dtype.name] 
-            self.data, self.shape = flatten(data), tuple(reverse(shape_from_array(data)))                                                                                       
+            self.data, self.shape = flatten(data), tuple(reverse(shape_from_array(data)))
+        #create from a python list or tuple                                                                                       
         elif isinstance(data, (list, tuple)):   
-            assert (all([isinstance(r, (list, tuple)) for r in data]) or shape) and len(data), "improper data" #Scalars and Vectors are not supported yet
+            assert (all([isinstance(r, (list, tuple)) for r in data]) or shape) and len(data), "improper data"
             self.data, self.shape = flatten(data), tuple(reverse(shape_from_array(data)))
             self.dtype =  next((v for  v in TYPES_DICT.values() if v.eq == self.data[0].__class__), None) if dtype is None else dtype 
 
@@ -90,8 +93,18 @@ class Tensor():
     def dot(self, other):
         assert len(self.shape) == len(other.shape) == 2 and (1 in self.shape and 1 in other.shape), "dot is defined only for vectors"
         return sum([x*y for x, y in zip(self.data, other.data)])
-    #TODO: matrix mutiplication
-    def matmul(self, other): pass 
+    
+    #TODO: matrix ops
+    def transpose(self): 
+        assert len(self.shape) == 2, "transpose is only defined for matrices (2D Tensors)"
+        return Tensor(map_along_axis(self.tolist(), lambda x: x))
+
+    def matmul(self, other): 
+        assert len(self.shape) == len(other.shape) == 2, "matmul is only defined for matrices (2D Tensors)"
+        assert self.shape[1] == other.shape[0], f"column of {self.shape} != row of {other.shape}"
+        othert = other.transpose()
+        return  Tensor([[_dot(self.data[i: i+self.shape[0]], othert.data[j: j+self.shape[0]]) for j in range(0, math.prod(self.shape),self.shape[0])] for i in range(0, math.prod(self.shape),self.shape[0])])
+        
     def tensordot(self, other, dims): pass
     
     #on self or return unaryOps
@@ -119,7 +132,7 @@ class Tensor():
     def setdata(self, val: Union[int, float, bool]): self.data = _set(self.data, val)
     #TODO: expand the tensor in a axis
     def expand(self, shape, n=0): pass
-    def transpose(self, axis1, axis2): self.shape[axis1], self.shape2 = self.shape[axis2], self.shape[axis1]
+    
     def reshape(self, shape):
         assert math.prod(self.shape) == math.prod(shape), "Tensor can't be of this shape"
         self.shape = tuple(shape)
