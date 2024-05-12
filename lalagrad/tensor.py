@@ -18,6 +18,7 @@ from lalagrad.array_ops import flatten, array_from_shape, add_const,\
 
 #a tensor needs to be atleast 2D (a matrice);     a vector is a row or column matrice
 class Tensor():
+    
     __slots__ = "data", "device", "shape", "dtype", "ctx", "strong", "requires_grad", "grad"
     
     def __init__(self, data: Union[None, List, np.ndarray]=None, shape: tuple[int]=None, dtype: Optional[DType]=None, 
@@ -41,22 +42,22 @@ class Tensor():
 
         
     @staticmethod
-    def zeros(shape, dtype=dtypes.int16, device=devices.CPU, ctx=None, strong=None, requires_grad=False): 
+    def zeros(shape, dtype=dtypes.int16, device=devices.CPU, ctx=None, strong=True, requires_grad=False): 
         return Tensor(array_from_shape(shape, 0), shape, dtype, device, ctx, requires_grad, strong)
     @staticmethod
-    def ones(shape, dtype=dtypes.int16, device=devices.CPU, ctx=None, strong=None, requires_grad=False): 
+    def ones(shape, dtype=dtypes.int16, device=devices.CPU, ctx=None, strong=True, requires_grad=False): 
         return Tensor(array_from_shape(shape, 1), shape, dtype, device, ctx, requires_grad, strong)
     @staticmethod
-    def full(val, shape, dtype=dtypes.int16, device=devices.CPU, ctx=None, strong=None, requires_grad=False): 
+    def full(val, shape, dtype=dtypes.int16, device=devices.CPU, ctx=None, strong=True, requires_grad=False): 
         return Tensor(array_from_shape(shape, val), shape, dtype, device, ctx, requires_grad, strong)
     @staticmethod
-    def empty(shape, dtype=dtypes.int16, device=devices.CPU, ctx=None, strong=None, requires_grad=False): 
+    def empty(shape, dtype=dtypes.int16, device=devices.CPU, ctx=None, strong=True, requires_grad=False): 
         return Tensor(None, shape, dtype, device, ctx, requires_grad, strong)
     @staticmethod
-    def rand(cls, shape, dtype=dtypes.float16, device=devices.CPU, ctx=None, strong=None, requires_grad=False): 
+    def rand(shape, dtype=dtypes.float16, device=devices.CPU, ctx=None, strong=True, requires_grad=False): 
         return Tensor(rand_array_from_shape(shape), shape, dtype, device, ctx, requires_grad, strong)
     @staticmethod
-    def eye(rows, colns = None, dtype=dtypes.int16, device=devices.CPU, ctx=None, strong=None, requires_grad=False): 
+    def eye(rows, colns = None, dtype=dtypes.int16, device=devices.CPU, ctx=None, strong=True, requires_grad=False): 
         if colns is None: colns = rows
         data = [[1 if j==i else 0 for j in range(colns)] for i in range(rows)]
         return  Tensor(data, dtype=dtype, device=device, ctx=ctx, requires_grad=requires_grad, strong=strong)
@@ -108,7 +109,7 @@ class Tensor():
         assert len(self.shape) == len(other.shape) == 2, "matmul is only defined for matrices (2D Tensors)"
         assert self.shape[1] == other.shape[0], f"column of {self.shape} != row of {other.shape}"
         othert = other.transpose()
-        return Tensor([[_dot(self.data[i: i+self.shape[0]], othert.data[j: j+self.shape[0]]) for j in range(0, math.prod(self.shape),self.shape[0])] for i in range(0, math.prod(self.shape),self.shape[0])])
+        return Tensor([[_dot(self.data[i: i+self.shape[1]], othert.data[j: j + other.shape[0]]) for j in range(0, math.prod(other.shape), other.shape[0])] for i in range(0, math.prod(self.shape),self.shape[1])])
 
 
     
@@ -169,4 +170,5 @@ class Tensor():
         assert axis < len(self.shape), "dimension doesn't exist"
         reduced = Tensor(build_higher_dim(axis, self.tolist(), max)) if axis != 0 else Tensor([map_along_axis(self.tolist(), max)])
         reduced.shape = tuple(1 if i==axis else e for i, e in enumerate(self.shape))
-        return reduced                  
+        return reduced   
+    

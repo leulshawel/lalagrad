@@ -1,6 +1,6 @@
 <img style="float: left" src=./lalagrad/utils/img/lala.jpeg alt=drawing width=200/>
 <b>lalagrad</b> will be a mid-level Deep learning framework for Educational purposes mainly
-<br>between tinygrad and a micrograd...closer to the tiny :)
+between tinygrad and a micrograd
 
 <br><br>
 <b>Tensors</b><br>
