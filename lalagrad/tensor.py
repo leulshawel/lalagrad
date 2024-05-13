@@ -56,7 +56,7 @@ class Tensor:
         return Tensor(None, shape, dtype, device, ctx, requires_grad, strong)
     @staticmethod
     def rand(shape, dtype=dtypes.float16, device=devices.CPU, ctx=None, strong=True, requires_grad=False): 
-        return Tensor(rand_array_from_shape(shape), shape, dtype, device, ctx, requires_grad, strong)
+        return Tensor(rand_array_from_shape(shape), shape, dtype, device, ctx, requires_grad, strong)        
     @staticmethod
     def eye(rows, colns = None, dtype=dtypes.int16, device=devices.CPU, ctx=None, strong=True, requires_grad=False): 
         if colns is None: colns = rows
@@ -88,10 +88,7 @@ class Tensor:
     def get_device(self): return self.device  
     def numel(self): return math.prod(self.shape)  
     def __repr__(self): return f"<Tensor: of shape: {self.shape}, {self.dtype} on {self.device} with grad: {self.grad}>"
-    
-    #set tensor properties
-    def set_device(self, d: Device): self.device = d
-            
+                
     #on self or return binary ops
     def __eq__(self, other): return self.data == other.data and self.shape == other.shape 
     @binary_op_wrapper  
@@ -125,8 +122,9 @@ class Tensor:
     def __pow__(self, e):  
         return  ([elem**e for elem in self.data], self.shape) if self.dtype not in (dtypes.bool,)  else (None, None)
     @unary_op_wrapper
-    def log(self, b=10): 
-        assert b != 1, "base can't be One"
+    def log(self, b: int=10): #the wrapper changes b to a tensor of Tensor([[b]])
+        assert b.data[0] != 1, "base can't be One"
+        b = b.data[0]
         return [round(math.log10(elem)/math.log10(b), self.dtype.precision) if self.dtype.precision is not None else math.log10(elem)/math.log10(b) for elem in self.data], self.shape
     def transpose(self): 
         assert len(self.shape) == 2, "transpose is only defined for matrices (2D Tensors)"
@@ -137,9 +135,8 @@ class Tensor:
         assert all([e.__class__ == self.dtype.eq for e in self.data]), "check failed on dtype" 
         assert len(self.data) == math.prod(self.shape), "check failed on shape"
         print("Tensor object in optimal state")
-        
-    def setdata(self, val: Union[int, float, bool]): self.data = _set(self.data, val)
-    
+    def set_device(self, d: Device): self.device = d
+    def setdata(self, l: Union[int, float, bool]): self.data = [round(e, self.dtype.precision) for e in l]
     def reshape(self, shape):
         assert math.prod(self.shape) == math.prod(shape), "Tensor can't be of this shape"
         self.shape = tuple(shape)

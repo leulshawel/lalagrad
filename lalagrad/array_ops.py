@@ -10,7 +10,7 @@ def flatten(l: Union[List, Tuple]): return [item for sublist in l for item in (f
 #generate an array from a shape
 def array_from_shape(shape: Union[List, tuple], val=0): return [val for _ in range(shape[0])] if len(shape)==1 \
     else [array_from_shape(shape[1:], val) for _ in range(shape[0])]
-#random vals
+#random vals are in the range of [-0.5, 0.5]
 def rand_array_from_shape(shape: Union[List, tuple], p=4): return [round(random.random()-0.5, p)for _ in range(shape[0])] if len(shape)==1 \
     else [rand_array_from_shape(shape[1:], p) for _ in range(shape[0])]
 #get shape from array assuming you provided the right tensor and return is in reverse order
