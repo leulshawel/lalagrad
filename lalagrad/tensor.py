@@ -27,7 +27,7 @@ class Tensor:
                  device: Device=devices.CPU, ctx = None, requires_grad=False, strong: bool=True):
         #data or shape is a must
         assert data is not None or shape is not None, "Tensor object requires atleast a data or a shape"
-        if data is None: self.data, self.shape, self.dtype = None, shape, None
+        if data is None: self.data, self.shape, self.dtype = None, shape, dtype
         #create from numpy ndarray
         elif isinstance(data, np.ndarray): 
             data, self.dtype = data.tolist(), TYPES_DICT[data.dtype.name] 
@@ -123,7 +123,7 @@ class Tensor:
     def __not__(self):  return [not b for b in self.data] if self.dtype==DType('bool') else [-1 * e for e in self._dat], self.shape
     @unary_op_wrapper
     def __pow__(self, e):  
-        return  [elem**e for elem in self.data] if self.dtype not in (dtypes.bool,)  else None
+        return  ([elem**e for elem in self.data], self.shape) if self.dtype not in (dtypes.bool,)  else (None, None)
     @unary_op_wrapper
     def log(self, b=10): 
         assert b != 1, "base can't be One"
