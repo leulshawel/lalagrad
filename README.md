@@ -62,7 +62,7 @@ if __name__ == "__main__":
     print(r.tolist()) 
 ```
 
-<br><b>Benchs</b>
+<br><b>Benchs</b><br>
 currently we are about around 15 times slower than Numpy and I know that sucks
 
 ```python
