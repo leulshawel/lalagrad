@@ -3,7 +3,7 @@
 for Educational purposes mainly and will be between tinygrad and micrograd as close as to the tiny as it needs to be
 
 <h3><b>The plan</b></h3>
-Though am building this to learn, the final thing has to be as fast as <b>Numpy</b> if not faster, with an nn module<br>
+Though am building this to learn, the final thing has to be<br>as fast as <b>Numpy</b> if not faster, with an nn module<br>
 
 <h3><b>Tensors</b></h3>
 
