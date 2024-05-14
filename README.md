@@ -34,8 +34,8 @@ print(z.max(axis=1).tolist())
 ```
 
 <br>
-<h3><b>Feed Forward </b></h3><br>
-with no backprob  (from the examples)
+<h3><b>Feed Forward </b></h3>
+with no backprob. take a look at examples/fcff.py
 
 
 ```python
@@ -64,7 +64,7 @@ if __name__ == "__main__":
 ```
 
 <br><b>Benchs</b><br>
-currently we are about around 15 times slower than Numpy and I know that sucks
+currently we are about around 15 times slower than Numpy and I know that sucks but e are working on it 
 
 ```python
 from bench.speed import SpeedBench, Benchs
