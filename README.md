@@ -6,6 +6,7 @@ for Educational purposes mainly and will be between tinygrad and micrograd as cl
 Though am building this to learn, the final thing has to be as fast as <b>Numpy</b> if not faster, with an nn module<br>
 
 <h3><b>Tensors</b></h3>
+
 most tensor creation methods and operations supported by [@tinygrad](https://github.com/tinygrad/tinygrad) will be here (may be all of them) look at lalagrad/tensor.py
 
 ```python
