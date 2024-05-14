@@ -64,7 +64,7 @@ if __name__ == "__main__":
 ```
 
 <br><b>Benchs</b><br>
-currently we are about around 15 times slower than Numpy and I know that sucks but e are working on it 
+currently we are about around 15 times slower than Numpy for matmul operations and 5 times slower for element wise ops
 
 ```python
 from bench.speed import SpeedBench, Benchs
