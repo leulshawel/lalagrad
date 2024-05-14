@@ -1,13 +1,13 @@
 <img style="float: left" src=./lalagrad/utils/img/lala.jpeg alt=drawing width=200/>
-<b><h3>lalagrad</h3></b> will be a mid-level Deep learning framework for Educational purposes mainly
+<b><h1>lalagrad</h1></b> will be a mid-level Deep learning framework for Educational purposes mainly
 between tinygrad and a micrograd
 
-<b><h4>The plan</h4></b><br>
+<b><h3>The plan</h3></b>
 Though am building this to learn, the final thing has to be as fast as <b>Numpy</b> if not faster, with an nn module<br>
 currently we are about around 15 times slower and that defenetly sucks
 
 <br><br>
-<b>Tensors</b><br>
+<b><h3>Tensors</h3></b><br>
 most tensor creation methods and operations supported by [@tinygrad](https://github.com/tinygrad/tinygrad) will be here (may be all of them) look at lalagrad/tensor.py
 
 ```python
