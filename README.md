@@ -1,13 +1,13 @@
 <img style="float: left" src=./lalagrad/utils/img/lala.jpeg alt=drawing width=200/>
 <b><h1>lalagrad</h1></b> will be a mid-level Deep learning framework for Educational purposes mainly
-between tinygrad and a micrograd
+between tinygrad and micrograd as close as to tiny as it needs to be
 
-<b><h3>The plan</h3></b>
+<h3><b>The plan</b></h3>
 Though am building this to learn, the final thing has to be as fast as <b>Numpy</b> if not faster, with an nn module<br>
 currently we are about around 15 times slower and that defenetly sucks
 
 <br><br>
-<b><h3>Tensors</h3></b><br>
+<h3><b>Tensors</b></h3>
 most tensor creation methods and operations supported by [@tinygrad](https://github.com/tinygrad/tinygrad) will be here (may be all of them) look at lalagrad/tensor.py
 
 ```python
@@ -35,6 +35,7 @@ print(z.max(axis=1).tolist())
 ```
 
 <br><b>Feed Forward </b>with no backprob
+
 
 ```python
 #at this point we can implement a simple fully connected feed forward nn without backprop
