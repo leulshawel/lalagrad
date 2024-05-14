@@ -2,6 +2,8 @@
 <b>lalagrad</b> will be a mid-level Deep learning framework for Educational purposes mainly
 between tinygrad and a micrograd
 
+though am building this to learn, the final thing has to be as fast as <b>Numpy</b> if not faster
+
 <br><br>
 <b>Tensors</b><br>
 most tensor creation methods and operations supported by [@tinygrad](https://github.com/tinygrad/tinygrad) will be here (may be all of them) look at lalagrad/tensor.py

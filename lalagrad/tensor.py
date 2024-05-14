@@ -91,13 +91,13 @@ class Tensor:
                 
     #on self or return binary ops
     def __eq__(self, other): return self.data == other.data and self.shape == other.shape 
-    @binary_op_wrapper  
+    @binary_op_wrapper() 
     def __add__(self, other): return [x+y for x, y in zip(self.data, other.data)], self.shape
-    @binary_op_wrapper
+    @binary_op_wrapper()
     def __sub__(self, other): return [x-y for x, y in zip(self.data, other.data)], self.shape
-    @binary_op_wrapper
+    @binary_op_wrapper()
     def __mul__(self, other): return [x*y for x, y in zip(self.data, other.data)], self.shape
-    @binary_op_wrapper
+    @binary_op_wrapper()
     def __truediv__(self, other): return [(round(x/y, self.dtype.precision) if self.dtype > other.dtype else round(x/y, other.dtype.precision)) if self.dtype is not None and other.dtype is not None else x/y for x, y in zip(self.data, other.data)], self.shape
     def __eq__(self, other): return self.dtype == other.dtype and self.shape == other.shape
     def dot(self, other):
@@ -112,19 +112,18 @@ class Tensor:
 
     
     #on self or return unaryOps
-    @unary_op_wrapper
+    @unary_op_wrapper()
     def sadd(self, s): return add_const(self.data, s), self.shape
-    @unary_op_wrapper
+    @unary_op_wrapper()
     def smul(self, s): return scale(self.data, s), self.shape
-    @unary_op_wrapper
+    @unary_op_wrapper()
     def __not__(self):  return [not b for b in self.data] if self.dtype==DType('bool') else [-1 * e for e in self._dat], self.shape
-    @unary_op_wrapper
+    @unary_op_wrapper()
     def __pow__(self, e):  
         return  ([elem**e for elem in self.data], self.shape) if self.dtype not in (dtypes.bool,)  else (None, None)
-    @unary_op_wrapper
+    @unary_op_wrapper(to_tensor=False)
     def log(self, b: int=10): #the wrapper changes b to a tensor of Tensor([[b]])
-        assert b.data[0] != 1, "base can't be One"
-        b = b.data[0]
+        assert b != 1, "base can't be One"
         return [round(math.log10(elem)/math.log10(b), self.dtype.precision) if self.dtype.precision is not None else math.log10(elem)/math.log10(b) for elem in self.data], self.shape
     def transpose(self): 
         assert len(self.shape) == 2, "transpose is only defined for matrices (2D Tensors)"

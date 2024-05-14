@@ -1,4 +1,7 @@
-Inspired and guided by George Hotz's tinyrgrad 
+lalagrad:
+        - is inspired and guided by George Hotz's tinyrgrad
+        - plans to use numba for speed
+        - uses lists a unit of data storage and trie to never use appends but build every list in a single run 
 
 implement a small Tensor class
         - requires multidimentional data or shape
