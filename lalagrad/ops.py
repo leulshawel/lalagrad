@@ -4,7 +4,7 @@ def binary_op_wrapper(to_tensor=True):
     def decorator(func):
         def wrapper(self, other):
             _class = self.__class__
-            if to_tensor: other = _class.full(val=other, shape=self.shape)
+            if to_tensor and not isinstance(other, _class): other = _class.full(val=other, shape=self.shape)
             #assert requirements for binary ops
             assert self.shape == other.shape and self.dtype is not None and other.dtype is not None and self.data is not None and other.data is not None, "Improper Tensors for Operation"
             #new Tensor with the result of the op
@@ -24,7 +24,7 @@ def unary_op_wrapper(to_tensor=True):
     def decorator(func):
         def wrapper(self, other):
             _class = self.__class__
-            if to_tensor: other = _class.full(val=other, shape=self.shape)
+            if to_tensor and not isinstance(other, _class): other = _class.full(val=other, shape=self.shape)
             assert self.data is not None, "Op on Empty Tensor"
             data, shape = func(self, other)
             new = _class(data=None, shape=shape, device=self.device, requires_grad=self.requires_grad) 
