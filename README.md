@@ -1,6 +1,6 @@
 <img style="float: left" src=./lalagrad/utils/img/lala.jpeg alt=drawing width=200/>
-<b><h1>lalagrad</h1></b> will be a mid-level Deep learning framework for Educational purposes mainly
-between tinygrad and micrograd as close as to tiny as it needs to be
+<b><h1>lalagrad</h1></b> lalagrad is a mid-level Deep learning framework currently in development<b> 
+for Educational purposes mainly and will be between tinygrad and micrograd as close as to the tiny as it needs to be
 
 <h3><b>The plan</b></h3>
 Though am building this to learn, the final thing has to be as fast as <b>Numpy</b> if not faster, with an nn module<br>
