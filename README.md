@@ -35,6 +35,7 @@ print(z.max(axis=1).tolist())
 
 <br>
 <h3><b>Feed Forward </b></h3>
+
 with no backprob. take a look at examples/fcff.py
 
 
@@ -63,7 +64,8 @@ if __name__ == "__main__":
     print(r.tolist()) 
 ```
 
-<br><b>Benchs</b><br>
+<h3><b>Benchs</b></h3>
+
 currently we are about around 15 times slower than Numpy for matmul operations and 5 times slower for element wise ops
 
 ```python
