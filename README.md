@@ -4,9 +4,7 @@ between tinygrad and micrograd as close as to tiny as it needs to be
 
 <h3><b>The plan</b></h3>
 Though am building this to learn, the final thing has to be as fast as <b>Numpy</b> if not faster, with an nn module<br>
-currently we are about around 15 times slower and that defenetly sucks
 
-<br><br>
 <h3><b>Tensors</b></h3>
 most tensor creation methods and operations supported by [@tinygrad](https://github.com/tinygrad/tinygrad) will be here (may be all of them) look at lalagrad/tensor.py
 
@@ -34,7 +32,9 @@ print(y.sum(axis=0).tolist())
 print(z.max(axis=1).tolist())                  
 ```
 
-<br><b>Feed Forward </b>with no backprob
+<br>
+<h3><b>Feed Forward </b></h3><br>
+with no backprob  (from the examples)
 
 
 ```python
@@ -60,4 +60,14 @@ if __name__ == "__main__":
     r = nn.forward(x)
     
     print(r.tolist()) 
+```
+
+<br><b>Benchs</b>
+currently we are about around 15 times slower than Numpy and I know that sucks
+
+```python
+from bench.speed import SpeedBench, Benchs
+
+if __name__ == "__main__":
+    SpeedBench(test=Benchs.MATMUL)()
 ```
