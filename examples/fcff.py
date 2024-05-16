@@ -4,8 +4,8 @@ from typing import Union, List, Tuple
 
 class FCFF:
     def __init__(self, layers: Union[List, Tuple]):
-        self.weights = [Tensor.rand(shape=(layers[i-1], layers[i])) for i in range(1, len(layers))]
-        self.biases = [Tensor.rand(shape=(1, layers[i])) for i in range(1, len(layers))]
+        self.weights = [Tensor.rand(shape=(layers[i], layers[i-1])) for i in range(1, len(layers))]
+        self.biases = [Tensor.rand(shape=(layers[i], 1)) for i in range(1, len(layers))]
         
     def forward(self, x: Tensor):
         for l, b in zip(self.weights, self.biases):
@@ -17,8 +17,8 @@ class FCFF:
 
 if __name__ == "__main__":
     #Model
-    inp , hidd, out = [3], [2, 4, 3, 4], [2]
-    nn = FCFF(inp + hidd + out)
+    layers = [3, 2, 4, 2, 3]
+    nn = FCFF(layers)
     #Input data
     x = Tensor([[1, 0, 1]])
     #Feed forward

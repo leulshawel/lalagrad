@@ -41,41 +41,54 @@ class Tensor:
                 self.dtype =  next((v for  v in TYPES_DICT.values() if v.eq == self.data[0].__class__), None) if dtype is None else dtype 
 
             _shape = shape_from_array(data)
-            shape = shape if shape is not None and math.prod(_shape) == math.prod(shape) else _shape
+            shape = list(shape if shape is not None and math.prod(_shape) == math.prod(shape) else _shape)
             shape.reverse()
             self.shape = tuple(shape)
 
+        #this are here cause they are commonly found in most ai frameworks and might be used in the future
         self.device, self.strong, self.ctx, self.requires_grad = device, strong, ctx, requires_grad
         self.grad: Optional[Tensor] = None
         
-        
+    #tensor a shape filled with zeros
     @staticmethod
     def zeros(shape, dtype=dtypes.int16, device=devices.CPU, ctx=None, strong=True, requires_grad=False): 
         return Tensor(array_from_shape(shape, 0), shape, dtype, device, ctx, requires_grad, strong)
+    #tensor a shape filled with ones
     @staticmethod
     def ones(shape, dtype=dtypes.int16, device=devices.CPU, ctx=None, strong=True, requires_grad=False): 
         return Tensor(array_from_shape(shape, 1), shape, dtype, device, ctx, requires_grad, strong)
+    #tensor a shape filled with a value 
     @staticmethod
     def full(val, shape, dtype=dtypes.int16, device=devices.CPU, ctx=None, strong=True, requires_grad=False): 
         return Tensor(array_from_shape(shape, val), shape, dtype, device, ctx, requires_grad, strong)
+    #tensor a shape filled with no data
+    #this could be used as a template
     @staticmethod
     def empty(shape, dtype=dtypes.int16, device=devices.CPU, ctx=None, strong=True, requires_grad=False): 
         return Tensor(None, shape, dtype, device, ctx, requires_grad, strong)
+    #tensor a shape filled with random values [-0.5, 0.5]
     @staticmethod
     def rand(shape, dtype=dtypes.float16, device=devices.CPU, ctx=None, strong=True, requires_grad=False): 
-        return Tensor(rand_array_from_shape(shape), shape, dtype, device, ctx, requires_grad, strong)        
+        return Tensor(rand_array_from_shape(shape), shape, dtype, device, ctx, requires_grad, strong)  
+    #build identity matrice of row and column      
     @staticmethod
     def eye(rows, colns = None, dtype=dtypes.int16, device=devices.CPU, ctx=None, strong=True, requires_grad=False): 
         if colns is None: colns = rows
         data = [[1 if j==i else 0 for j in range(colns)] for i in range(rows)]
         return  Tensor(data, dtype=dtype, device=device, ctx=ctx, requires_grad=requires_grad, strong=strong)
+    #build of a higher dimension by combinning Tensors of the same shape
+    #NOTE: i dont like this implementation
     @staticmethod
-    def merge(x: Union[List, Tuple]):
-        _t = x[0]
-        assert all([t.shape == _t.shape for t in x]) 
-        return Tensor(data=[t.tolist() for t in x], shape=_t.shape, dtype=max([t.dtype for t in x]))
+    def merge(*args: Tuple):
+        _t = args[0]
+        assert all([t.shape == _t.shape for t in args]) 
+        data, shape = [], (len(args), ) + tuple(s for s in _t.shape)
+        for t in args: data += t.data
+        return Tensor(data=data, shape=shape, dtype=max([t.dtype for t in args]))
+    #build a tensor like self but filled with ones
     def ones_like(self): 
         return Tensor.ones(self.shape, self.dtype, self.device, self.ctx, self.requires_grad, self.strong)
+    #build a tensor like self but filled with zeros
     def zeros_like(self): 
         return Tensor.zeros(self.shape, self.dtype, self.device, self.ctx, self.requires_grad, self.strong)
     
@@ -121,8 +134,6 @@ class Tensor:
         othert = other.transpose()
         return Tensor([[_dot(self.data[i: i+self.shape[1]], othert.data[j: j + other.shape[0]]) for j in range(0, math.prod(other.shape), other.shape[0])] for i in range(0, math.prod(self.shape),self.shape[1])])
 
-
-    
     #on self or return unaryOps
     @unary_op_wrapper()
     def sadd(self, s): return add_const(self.data, s), self.shape
