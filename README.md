@@ -4,7 +4,8 @@
 for Educational purposes mainly and will be between [@tinygrad](https://github.com/tinygrad/tinygrad) and [@microrad](https://github.com/karpathy/micrograd).
 
 <h3><b>The plan</b></h3>
-Though am building this to learn, the final thing has to be as fast as <b>Numpy</b> if not faster, with an nn module<br>
+Though am building this to learn, the final thing has to be as fast as <b>Numpy</b> if not faster.
+And with a decent nn module<br>
 
 <h3><b>Tensors</b></h3>
 
