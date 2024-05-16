@@ -12,17 +12,16 @@ class FCFF:
             x = x.matmul(l)
             x.Relu()
             x += b
+            
+        x.Softmax()
         return x
     
 
 if __name__ == "__main__":
-    #Model
-    layers = [3, 2, 4, 2, 3]
-    nn = FCFF(layers)
-    #Input data
-    x = Tensor([[1, 0, 1]])
-    #Feed forward
-    r = nn.forward(x)
+    layers = [3, 2, 4, 2, 3]    
+    nn = FCFF(layers)           #Model
+    x = Tensor([[1, 0, 1]])     #Input data    
+    r = nn.forward(x)           #Feed forward
     
     print(r.tolist()) 
     

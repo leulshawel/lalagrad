@@ -35,7 +35,37 @@ print(y.sum(axis=0).tolist())
 print(z.max(axis=1).tolist())                  
 ```
 
-<br>
+<h3><b>Example</b></h3>
+
+Simple Fully Connected Feed Forward without backprob  look at examples/fcff.py
+
+```python
+from lalagrad import Tensor
+from typing import Union, List, Tuple
+
+class FCFF:
+    def __init__(self, layers: Union[List, Tuple]):
+        self.weights = [Tensor.rand(shape=(layers[i], layers[i-1])) for i in range(1, len(layers))]
+        self.biases = [Tensor.rand(shape=(layers[i], 1)) for i in range(1, len(layers))]
+        
+    def forward(self, x: Tensor):
+        for l, b in zip(self.weights, self.biases):
+            x = x.matmul(l)
+            x.Relu()
+            x += b
+        x.Softmax()
+        return x
+    
+
+if __name__ == "__main__":
+    layers = [3, 2, 4, 2, 3]    
+    nn = FCFF(layers)           #Model
+    x = Tensor([[1, 0, 1]])     #Input data    
+    r = nn.forward(x)           #Feed forward
+    
+    print(r.tolist()) 
+ ``` 
+
 
 <h3><b>Benchs</b></h3>
 
