@@ -1,7 +1,7 @@
 #TODO: 
 # return handling for matmul and transpose
 # expand and tensordot op
-# shold self.device affect __eq__? if yes why is it not working
+# should self.device affect __eq__? if yes why is it not working
 
 
 import numpy as np
@@ -13,7 +13,7 @@ from lalagrad.dtype import DType, dtypes, TYPES_DICT
 from lalagrad.device import Device ,devices
 from lalagrad.ops import binary_op_wrapper, unary_op_wrapper
 from lalagrad.array_ops import flatten, array_from_shape, add_const,\
-    shape_from_array, reverse, scale, devide_array, _set, rand_array_from_shape,\
+    shape_from_array, reverse, scale, devide_array, rand_array_from_shape,\
     map_along_axis, build_higher_dim, _dot
     
 
@@ -22,6 +22,8 @@ from lalagrad.array_ops import flatten, array_from_shape, add_const,\
 class Tensor:
     
     __slots__ = "data", "device", "shape", "dtype", "ctx", "strong", "requires_grad", "grad"
+    _isinstance = lambda obj, classes: obj.__class__ if isinstance(obj, classes) else False
+
     
     def __init__(self, data: Union[None, List, np.ndarray]=None, shape: Union[None, tuple[int]]=None, dtype: Optional[DType]=None, 
                  device: Device=devices.CPU, ctx = None, requires_grad=False, strong: bool=True):
@@ -29,14 +31,17 @@ class Tensor:
         assert data is not None or shape is not None, "Tensor object requires atleast a data or a shape"
         if data is None: self.data, self.shape, self.dtype = None, shape, dtype
         #create from numpy ndarray
-        elif isinstance(data, np.ndarray): 
-            data, self.dtype = data.tolist(), TYPES_DICT[data.dtype.name] 
-            self.data, self.shape = flatten(data), tuple(reverse(shape_from_array(data)))
-        #create from a python list or tuple                                                                                       
-        elif isinstance(data, (list, tuple)):   
-            assert (all([isinstance(r, (list, tuple)) for r in data]) or shape) and len(data), "improper data"
-            self.data, self.shape = flatten(data), tuple(reverse(shape_from_array(data)))
-            self.dtype =  next((v for  v in TYPES_DICT.values() if v.eq == self.data[0].__class__), None) if dtype is None else dtype 
+        else:
+            assert (_class := Tensor._isinstance(data, (np.ndarray, list, tuple))), f"Tensor object can't be built from {_class}"
+            if (_class == np.ndarray): 
+                data, self.dtype = data.tolist(), TYPES_DICT[data.dtype.name] 
+                self.data, self.shape = flatten(data), tuple(reverse(shape_from_array(data)))
+            #create from a python list or tuple                                                                                       
+            elif _class in (list, tuple):   
+                assert (all([isinstance(r, (list, tuple)) for r in data]) or shape) and len(data), "improper data"
+                self.data, self.shape = flatten(data), tuple(reverse(shape_from_array(data)))
+                self.dtype =  next((v for  v in TYPES_DICT.values() if v.eq == self.data[0].__class__), None) if dtype is None else dtype 
+
 
         self.device, self.strong, self.ctx, self.requires_grad = device, strong, ctx, requires_grad
         self.grad: Optional[Tensor] = None
@@ -168,9 +173,16 @@ class Tensor:
         reduced = Tensor(build_higher_dim(axis, self.tolist(), max)) if axis != 0 else Tensor([map_along_axis(self.tolist(), max)])
         reduced.shape = tuple(1 if i==axis else e for i, e in enumerate(self.shape))
         return reduced   
+    
+    #NN helper ops
+    def conv1d(self, kernel, padding=0, stride=1):
+        assert (_class := Tensor._isinstance(kernel, (list, tuple, Tensor))), "Invalid kernel"
+        data, kernel = self.data, kernel if  _class == list else (list(kernel) if _class == tuple else  kernel.data)
+        padd, l1, l2 = [0 for _ in range(padding)], len(kernel), len(data)
+        data, w = padd + data + padd, min(l2, l1)
+        return []        
 
     #MAP a function on a Tensor (for activation functions)
-    def _map(self, f): self.data = f(self.data)
     def Relu(self): self.data = Acts.Relu(self.data)
     def Tanh(self): self.data = Acts.Tanh(self.data)
     def Sigmoid(self): self.data = Acts.Sigmoid(self.data)

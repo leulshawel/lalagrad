@@ -19,8 +19,6 @@ def shape_from_array(l: Union[List, Tuple]): return shape_from_array(l[0]) + [le
 def add_const(l: Union[List, Tuple], c: Union[int, float, bool, DType]): return [add_const(e, c) if isinstance(e, (list, tuple)) else e+c for e in l]
 #multiply with a scalar
 def scale(l: Union[List, Tuple], c: Union[int, float, bool, DType]): return [scale(e, c) if isinstance(e, (list, tuple)) else e*c for e in l]
-#set every element to a value
-def _set (l: Union[List, Tuple], val: Union[int, float, bool, DType]=0): return [_set(e, val) if isinstance(e, (list, tuple)) else val for e in l]
 #dot product
 def _dot(l1, l2):
     return sum([x*y for x, y in zip(l1, l2)])

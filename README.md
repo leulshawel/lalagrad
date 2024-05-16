@@ -1,13 +1,13 @@
 <img style="float: left" src=./lalagrad/utils/img/lala.jpeg alt=drawing width=200/>
 <b><h1>lalagrad</h1></b> lalagrad is a mid-level Deep learning framework currently in development<br> 
-for Educational purposes mainly and will be between tinygrad and micrograd. as close as to the tiny as it needs to be
+for Educational purposes mainly and will be between [@tinygrad](https://github.com/tinygrad/tinygrad) and [@microrad](https://github.com/karpathy/micrograd).
 
 <h3><b>The plan</b></h3>
 Though am building this to learn, the final thing has to be as fast as <b>Numpy</b> if not faster, with an nn module<br>
 
 <h3><b>Tensors</b></h3>
 
-most tensor creation methods and operations supported by [@tinygrad](https://github.com/tinygrad/tinygrad) will be here (may be all of them) look at lalagrad/tensor.py
+most tensor creation methods and operations supported by tinygrad will be here (may be all of them) look at lalagrad/tensor.py
 
 ```python
 from lalagrad import Tensor
@@ -58,10 +58,10 @@ if __name__ == "__main__":
     #Model
     nn = FCFF([3, 2, 1])
 
-    x = Tensor([[1, 0, 1]])
-    r = nn.forward(x)
+    x = Tensor([[1, 0, 1]]) #input
+    r = nn.forward(x)       #feed forward
     
-    print(r.tolist()) 
+    print(r.tolist())       #result to a list
 ```
 
 <h3><b>Benchs</b></h3>
@@ -70,7 +70,5 @@ currently we are about around 15 times slower than Numpy for matmul operations a
 
 ```python
 from bench.speed import SpeedBench, Benchs
-
-if __name__ == "__main__":
-    SpeedBench(test=Benchs.MATMUL)()
+SpeedBench(test=Benchs.MATMUL)()
 ```
