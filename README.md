@@ -71,6 +71,7 @@ if __name__ == "__main__":
 currently we are about around 15 times slower than Numpy for matmul operations and 5 times slower for element wise ops
 
 ```python
-from bench.speed import SpeedBench, Benchs
-SpeedBench(test=Benchs.MATMUL)()
+from bench.lalagrad.speed import SpeedBench, Benchs
+#average a 100 runs with 10000 matmul ops in each loop
+SpeedBench(test=Benchs.MATMUL)(loop=10000, avg=100)  
 ```
