@@ -1,5 +1,6 @@
 <img style="float: left" src=./lalagrad/utils/img/lala.jpeg alt=drawing width=200/>
 <b><h1>lalagrad</h1></b> lalagrad is a mid-level Deep learning framework currently in development<br> 
+
 for Educational purposes mainly and will be between [@tinygrad](https://github.com/tinygrad/tinygrad) and [@microrad](https://github.com/karpathy/micrograd).
 
 <h3><b>The plan</b></h3>
