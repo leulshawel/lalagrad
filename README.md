@@ -1,5 +1,5 @@
 <img style="float: left" src=./lalagrad/utils/img/lala.jpeg alt=drawing width=200/>
-<b><h1>lalagrad</h1></b> lalagrad is a mid-level Deep learning framework currently in development<br> 
+<b><h1>lalagrad</h1></b> lalagrad is a mid-level Deep learning framework currently under development<br> 
 
 for Educational purposes mainly and will be between [@tinygrad](https://github.com/tinygrad/tinygrad) and [@microrad](https://github.com/karpathy/micrograd).
 
@@ -36,35 +36,6 @@ print(z.max(axis=1).tolist())
 ```
 
 <br>
-<h3><b>Feed Forward </b></h3>
-
-with no backprob. take a look at examples/fcff.py
-
-
-```python
-#at this point we can implement a simple fully connected feed forward nn without backprop
-
-from lalagrad import Tensor
-from typing import Union, List, Tuple
-
-class FCFF:
-    def __init__(self, layers: Union[List, Tuple]):
-        self.weights = [Tensor.rand(shape=(layers[i-1], layers[i])) for i in range(1, len(layers))]
-        self.biases = [Tensor.rand(shape=(1, layers[i])) for i in range(1, len(layers))]
-    def forward(self, x: Tensor):
-        for l, b in zip(self.weights, self.biases):
-            x = x.matmul(l) + b
-        return x
-    
-if __name__ == "__main__":
-    #Model
-    nn = FCFF([3, 2, 1])
-
-    x = Tensor([[1, 0, 1]]) #input
-    r = nn.forward(x)       #feed forward
-    
-    print(r.tolist())       #result to a list
-```
 
 <h3><b>Benchs</b></h3>
 
