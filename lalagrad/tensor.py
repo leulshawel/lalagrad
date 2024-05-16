@@ -1,11 +1,9 @@
 #TODO: 
-# return handling for matmul and transpose
 # expand and tensordot op
-# should self.device affect __eq__? if yes why is it not working
 
 
 import numpy as np
-from typing import Optional, Union, List
+from typing import Optional, Union, List, Tuple
 import math
 
 from lalagrad.nn import Acts
@@ -13,7 +11,7 @@ from lalagrad.dtype import DType, dtypes, TYPES_DICT
 from lalagrad.device import Device ,devices
 from lalagrad.ops import binary_op_wrapper, unary_op_wrapper
 from lalagrad.array_ops import flatten, array_from_shape, add_const,\
-    shape_from_array, reverse, scale, devide_array, rand_array_from_shape,\
+    shape_from_array, scale, devide_array, rand_array_from_shape,\
     map_along_axis, build_higher_dim, _dot
     
 
@@ -25,7 +23,7 @@ class Tensor:
     _isinstance = lambda obj, classes: obj.__class__ if isinstance(obj, classes) else False
 
     
-    def __init__(self, data: Union[None, List, np.ndarray]=None, shape: Union[None, tuple[int]]=None, dtype: Optional[DType]=None, 
+    def __init__(self, data: Union[None, List, Tuple , np.ndarray]=None, shape: Union[None, List, Tuple]=None, dtype: Optional[DType]=None, 
                  device: Device=devices.CPU, ctx = None, requires_grad=False, strong: bool=True):
         #data or shape is a must
         assert data is not None or shape is not None, "Tensor object requires atleast a data or a shape"
@@ -35,13 +33,17 @@ class Tensor:
             assert (_class := Tensor._isinstance(data, (np.ndarray, list, tuple))), f"Tensor object can't be built from {_class}"
             if (_class == np.ndarray): 
                 data, self.dtype = data.tolist(), TYPES_DICT[data.dtype.name] 
-                self.data, self.shape = flatten(data), tuple(reverse(shape_from_array(data)))
+                self.data = flatten(data)
             #create from a python list or tuple                                                                                       
             elif _class in (list, tuple):   
                 assert (all([isinstance(r, (list, tuple)) for r in data]) or shape) and len(data), "improper data"
-                self.data, self.shape = flatten(data), tuple(reverse(shape_from_array(data)))
+                self.data = flatten(data)
                 self.dtype =  next((v for  v in TYPES_DICT.values() if v.eq == self.data[0].__class__), None) if dtype is None else dtype 
 
+            _shape = shape_from_array(data)
+            shape = shape if shape is not None and math.prod(_shape) == math.prod(shape) else _shape
+            shape.reverse()
+            self.shape = tuple(shape)
 
         self.device, self.strong, self.ctx, self.requires_grad = device, strong, ctx, requires_grad
         self.grad: Optional[Tensor] = None
@@ -67,6 +69,11 @@ class Tensor:
         if colns is None: colns = rows
         data = [[1 if j==i else 0 for j in range(colns)] for i in range(rows)]
         return  Tensor(data, dtype=dtype, device=device, ctx=ctx, requires_grad=requires_grad, strong=strong)
+    @staticmethod
+    def merge(x: Union[List, Tuple]):
+        _t = x[0]
+        assert all([t.shape == _t.shape for t in x]) 
+        return Tensor(data=[t.tolist() for t in x], shape=_t.shape, dtype=max([t.dtype for t in x]))
     def ones_like(self): 
         return Tensor.ones(self.shape, self.dtype, self.device, self.ctx, self.requires_grad, self.strong)
     def zeros_like(self): 
