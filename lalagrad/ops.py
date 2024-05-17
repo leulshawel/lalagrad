@@ -11,9 +11,10 @@ def binary_op_wrapper(to_tensor=True):
             strongest_dtype = self.dtype if self.dtype > other.dtype else other.dtype
             data, shape = func(self, other)
             new = _class(data=None, shape=shape, dtype=strongest_dtype, device=self.device, requires_grad=self.requires_grad or other.requires_grad)
-            new.setdata(data)
-            if self.strong and other.strong: return  new #return new if both are strong tensors
-            if self.strong: other.data, other.dtype = func(self, other), strongest_dtype
+            if self.strong and other.strong: 
+                new.setdata(data)
+                return  new #return new if both are strong tensors
+            if self.strong: other.data, other.dtype = data, strongest_dtype
             else: self.data, self.dtype = data, strongest_dtype  
         return wrapper
     return decorator

@@ -41,8 +41,8 @@ class Tensor:
                 self.dtype =  next((v for  v in TYPES_DICT.values() if v.eq == self.data[0].__class__), None) if dtype is None else dtype 
 
             _shape = shape_from_array(data)
+            _shape.reverse()    
             shape = list(shape if shape is not None and math.prod(_shape) == math.prod(shape) else _shape)
-            shape.reverse()
             self.shape = tuple(shape)
 
         #this are here cause they are commonly found in most ai frameworks and might be used in the future
@@ -158,7 +158,8 @@ class Tensor:
         assert len(self.data) == math.prod(self.shape), "check failed on shape"
         print("Tensor object in optimal state")
     def set_device(self, d: Device): self.device = d
-    def setdata(self, l: Union[int, float, bool]): self.data = [round(e, self.dtype.precision) for e in l]
+    def setdata(self, l: Union[int, float, bool]): 
+        self.data = [round(e, self.dtype.precision) for e in l]
     def reshape(self, shape):
         assert math.prod(self.shape) == math.prod(shape), "Tensor can't be of this shape"
         self.shape = tuple(shape)
