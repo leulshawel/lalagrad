@@ -48,7 +48,8 @@ class FCFF:
         
     def forward(self, x):
         for l, b in zip(self.weights, self.biases):
-            x = x.matmul(l); x.Relu(); x += b; x.Softmax()
+            x = x.matmul(l); x.Relu(); x += b;
+        x.Softmax()
         return x
     
 if __name__ == "__main__":
