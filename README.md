@@ -66,7 +66,7 @@ currently we are about around 15 times slower than Numpy for matmul operations a
 We will get there
 
 ```python
-from bench.lalagrad.numpy import SpeedBench, Benchs
-#average a 100 runs with 10000 matmul ops in each loop
+from bench.lalagrad.numpy import SpeedBench, Benchs #lalagrad benchs against numpy
+#average a 100 runs with 10000 loop of matmul ops
 if __name__ == "__main__": SpeedBench(test=Benchs.MATMUL)(loop=10000, avg=100)  
 ```

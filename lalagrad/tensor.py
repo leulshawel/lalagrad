@@ -199,11 +199,13 @@ class Tensor:
         data, kernel = self.data, kernel if  _class == list else (list(kernel) if _class == tuple else  kernel.data)
         padd, l1, l2 = [0 for _ in range(padding)], len(kernel), len(data)
         data, win = padd + data + padd, min(l2, l1)
-        return [[i  for i in range((j-l2)*(j>l2), win)] for j in range(l1+l2)]        
-
-    #MAP a function on a Tensor (for activation functions)
+        return []
+    
+    #MAP a function on a Tensor (helps for activation functions)
+    def _map(self, f): self.data = [f(e) for e in self.data]
     def Relu(self): self.data = Acts.Relu(self.data)
     def Tanh(self): self.data = Acts.Tanh(self.data)
     def Sigmoid(self): self.data = Acts.Sigmoid(self.data)
     def Softmax(self): self.data = Acts.Softmax(self.data)
     def Signum(self): self.data = Acts.Signum(self.data)
+    
