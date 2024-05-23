@@ -1,4 +1,3 @@
-from math import prod
 #How do you want the result of your object and some op assertions
 def binary_op_wrapper(to_tensor=True):
     def decorator(func):
@@ -23,7 +22,7 @@ def binary_op_wrapper(to_tensor=True):
 #samething but for unary ops
 def unary_op_wrapper(to_tensor=True):
     def decorator(func):
-        def wrapper(self, other):
+        def wrapper(self, other=None):
             _class = self.__class__
             if to_tensor and not isinstance(other, _class): other = _class.full(val=other, shape=self.shape)
             assert self.data is not None, "Op on Empty Tensor"

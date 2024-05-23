@@ -1,4 +1,6 @@
 
+#No backprob
+
 from lalagrad import Tensor
 from typing import Union, List, Tuple
 

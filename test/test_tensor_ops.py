@@ -36,7 +36,7 @@ class TestReduceOps(unittest.TestCase):
         self.assertEqual(r.tolist(), a.min(1).tolist())
 
         
-class TestReduceOps(unittest.TestCase):
+class TestMatrixOps(unittest.TestCase):
     def test_transpose(self): self.assertEqual(m.transpose().tolist(), c.transpose().tolist())
     def test_matmul(self): self.assertEqual(m.matmul(m).tolist(), c.__matmul__(c).tolist())
  

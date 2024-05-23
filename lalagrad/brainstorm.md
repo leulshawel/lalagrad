@@ -13,5 +13,11 @@ implement a small Tensor class
         - you can't have a tensor of shape(n,) in lalagrad. the smallest dimension tensor is a Matrice (2D). a vector is just a row matrice (n, 1) or a column matrice (1, n) and a scalar is a (1, 1) Tensor
         - transpose and matmul only defined for Matrices (2D Tensors)
 
-automatic differentiation
-        - 
+accelerate Ops
+        - We need a n conputation graph
+                maybe interaction conbinators 
+                Operation graphs
+        - Numba 
+        - Multprocessing
+                go through the operations and parallelize independent ops
+                take a single tensor op and parallelize ops along the dimensions or elements

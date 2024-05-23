@@ -30,7 +30,8 @@ class Tensor:
         if data is None: self.data, self.shape, self.dtype = None, shape, dtype
         #create from numpy ndarray
         else:
-            assert (_class := Tensor._isinstance(data, (np.ndarray, list, tuple))), f"Tensor object can't be built from {_class}"
+            assert (_class := Tensor._isinstance(data, (np.ndarray, list, tuple, int, float, bool))), f"Tensor object can't be built from object of type {_class}"
+            if _class in (int, float, bool): data, _class = [[data]], list
             if (_class == np.ndarray): 
                 data, self.dtype = data.tolist(), TYPES_DICT[data.dtype.name] 
                 self.data = flatten(data)
@@ -81,9 +82,8 @@ class Tensor:
     @staticmethod
     def merge(*args: Tuple):
         _t = args[0]
-        assert all([t.shape == _t.shape for t in args]) 
-        data, shape = [], (len(args), ) + tuple(s for s in _t.shape)
-        for t in args: data += t.data
+        assert all([t.shape == _t.shape for t in args]), "Only tensors of the same shape can b"
+        data, shape = [t.data for t in args], (len(args), ) + tuple(s for s in _t.shape)
         return Tensor(data=data, shape=shape, dtype=max([t.dtype for t in args]))
     #build a tensor like self but filled with ones
     def ones_like(self): 
@@ -113,27 +113,8 @@ class Tensor:
     def get_device(self): return self.device  
     def numel(self): return math.prod(self.shape)  
     def __repr__(self): return f"<Tensor: of shape: {self.shape}, {self.dtype} on {self.device} with grad: {self.grad}>"
-                
-    #on self or return binary ops
-    def __eq__(self, other): return self.data == other.data and self.shape == other.shape 
-    @binary_op_wrapper() 
-    def __add__(self, other): return [x+y for x, y in zip(self.data, other.data)], self.shape
-    @binary_op_wrapper()
-    def __sub__(self, other): return [x-y for x, y in zip(self.data, other.data)], self.shape
-    @binary_op_wrapper()
-    def __mul__(self, other): return [x*y for x, y in zip(self.data, other.data)], self.shape
-    @binary_op_wrapper()
-    def __truediv__(self, other): return [(round(x/y, self.dtype.precision) if self.dtype > other.dtype else round(x/y, other.dtype.precision)) if self.dtype is not None and other.dtype is not None else x/y for x, y in zip(self.data, other.data)], self.shape
-    def __eq__(self, other): return self.dtype == other.dtype and self.shape == other.shape
-    def dot(self, other):
-        assert len(self.shape) == len(other.shape) == 2 and (1 in self.shape and 1 in other.shape), "dot is defined only for vectors"
-        return sum([x*y for x, y in zip(self.data, other.data)])
-    def matmul(self, other): 
-        assert len(self.shape) == len(other.shape) == 2, "matmul is only defined for matrices (2D Tensors)"
-        assert self.shape[1] == other.shape[0], f"column of {self.shape} != row of {other.shape}"
-        othert = other.transpose()
-        return Tensor([[_dot(self.data[i: i+self.shape[1]], othert.data[j: j + other.shape[0]]) for j in range(0, math.prod(other.shape), other.shape[0])] for i in range(0, math.prod(self.shape),self.shape[1])])
-
+    
+    
     #on self or return unaryOps
     @unary_op_wrapper()
     def sadd(self, s): return add_const(self.data, s), self.shape
@@ -148,9 +129,35 @@ class Tensor:
     def log(self, b: int=10): #the wrapper changes b to a tensor of Tensor([[b]])
         assert b != 1, "base can't be One"
         return [round(math.log10(elem)/math.log10(b), self.dtype.precision) if self.dtype.precision is not None else math.log10(elem)/math.log10(b) for elem in self.data], self.shape
-    def transpose(self): 
+    @unary_op_wrapper()
+    def transpose(self, o): 
         assert len(self.shape) == 2, "transpose is only defined for matrices (2D Tensors)"
-        return Tensor(map_along_axis(self.tolist(), lambda x: x)) 
+        data = flatten(map_along_axis(self.tolist(), lambda x: x)) 
+        return data, (self.shape[1], self.shape[0])
+    
+                
+    #on self or return binary ops
+    def __eq__(self, other): return self.data == other.data and self.shape == other.shape 
+    @binary_op_wrapper() 
+    def __add__(self, other): return [x+y for x, y in zip(self.data, other.data)], self.shape
+    @binary_op_wrapper()
+    def __sub__(self, other): return [x-y for x, y in zip(self.data, other.data)], self.shape
+    @binary_op_wrapper()
+    def __mul__(self, other): return [x*y for x, y in zip(self.data, other.data)], self.shape
+    @binary_op_wrapper()
+    def __truediv__(self, other): return [(round(x/y, self.dtype.precision) if self.dtype > other.dtype else round(x/y, other.dtype.precision)) if self.dtype is not None and other.dtype is not None else x/y for x, y in zip(self.data, other.data)], self.shape
+    def __eq__(self, other): return self.dtype == other.dtype and self.shape == other.shape
+    @binary_op_wrapper()
+    def dot(self, other):
+        assert len(self.shape) == len(other.shape) == 2 and (1 in self.shape and 1 in other.shape), "dot is defined only for vectors"
+        return sum([x*y for x, y in zip(self.data, other.data)])
+    @binary_op_wrapper()
+    def matmul(self, other): 
+        assert len(self.shape) == len(other.shape) == 2, "matmul is only defined for matrices (2D Tensors)"
+        assert self.shape[1] == other.shape[0], f"column of {self.shape} != row of {other.shape}"
+        othert = other.transpose()
+        data = flatten([[_dot(self.data[i: i+self.shape[1]], othert.data[j: j + other.shape[0]]) for j in range(0, math.prod(other.shape), other.shape[0])] for i in range(0, math.prod(self.shape),self.shape[1])])
+        return data, (self.shape[0], other.shape[1])
     
     #on self ops
     def check(self):
@@ -202,7 +209,7 @@ class Tensor:
         return []
     
     #MAP a function on a Tensor (helps for activation functions)
-    def _map(self, f): self.data = [f(e) for e in self.data]
+    def map_(self, f): self.data = list(map(f, self.data))
     def Relu(self): self.data = Acts.Relu(self.data)
     def Tanh(self): self.data = Acts.Tanh(self.data)
     def Sigmoid(self): self.data = Acts.Sigmoid(self.data)
