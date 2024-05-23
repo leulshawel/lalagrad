@@ -14,6 +14,8 @@ from lalagrad.array_ops import flatten, array_from_shape, add_const,\
     shape_from_array, scale, devide_array, rand_array_from_shape,\
     map_along_axis, build_higher_dim, _dot
     
+gettype = lambda x: next((v for  v in TYPES_DICT.values() if v.eq == x.__class__), None)
+
 
 #a tensor needs to be atleast 2D (a matrice);    
 # a vector is a row or column matrice and scalar is a (1, 1) matrice
@@ -21,7 +23,6 @@ class Tensor:
     
     __slots__ = "data", "device", "shape", "dtype", "ctx", "strong", "requires_grad", "grad"
     _isinstance = lambda obj, classes: obj.__class__ if isinstance(obj, classes) else False
-
     
     def __init__(self, data: Union[None, List, Tuple , np.ndarray]=None, shape: Union[None, List, Tuple]=None, dtype: Optional[DType]=None, 
                  device: Device=devices.CPU, ctx = None, requires_grad=False, strong: bool=True):
@@ -39,7 +40,7 @@ class Tensor:
             elif _class in (list, tuple):   
                 assert (all([isinstance(r, (list, tuple)) for r in data]) or shape) and len(data), "improper data"
                 self.data = flatten(data)
-                self.dtype =  next((v for  v in TYPES_DICT.values() if v.eq == self.data[0].__class__), None) if dtype is None else dtype 
+                self.dtype =   gettype(self.data[0]) if dtype is None else dtype 
 
             _shape = shape_from_array(data)
             _shape.reverse()    
@@ -151,7 +152,7 @@ class Tensor:
     def dot(self, other):
         assert len(self.shape) == len(other.shape) == 2 and (1 in self.shape and 1 in other.shape), "dot is defined only for vectors"
         return sum([x*y for x, y in zip(self.data, other.data)])
-    @binary_op_wrapper()
+    @binary_op_wrapper(equal_shape=False)
     def matmul(self, other): 
         assert len(self.shape) == len(other.shape) == 2, "matmul is only defined for matrices (2D Tensors)"
         assert self.shape[1] == other.shape[0], f"column of {self.shape} != row of {other.shape}"
@@ -166,6 +167,7 @@ class Tensor:
         print("Tensor object in optimal state")
     def set_device(self, d: Device): self.device = d
     def setdata(self, l: Union[int, float, bool]): 
+        self.dtype = (t if t > self.dtype else self.dtype) if (t := gettype(l[0])) is not None else self.dtype
         self.data = [round(e, self.dtype.precision) for e in l]
     def reshape(self, shape):
         assert math.prod(self.shape) == math.prod(shape), "Tensor can't be of this shape"

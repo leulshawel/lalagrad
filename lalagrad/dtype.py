@@ -13,6 +13,7 @@ class DType:
     def __repr__(self): return f"<dtype: {self.name}({self.fmt})>"
     def __lt__(self, other): return self.strength < other.strength
     def __gt__(self, other): return self.strength > other.strength
+    
   
 #Common data types  
 class dtypes:
