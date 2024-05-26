@@ -68,6 +68,6 @@ But let's get thid thing working and we will refactor for speed
 
 ```python
 from bench.lalagrad.numpy import SpeedBench, Benchs #lalagrad benchs against numpy
-#average a 100 runs with 10000 loop of matmul ops
+#average a 100 loops with 10000 matmul ops in each
 if __name__ == "__main__": SpeedBench(test=Benchs.MATMUL)(loop=10000, avg=100)  
 ```

@@ -39,6 +39,10 @@ class TestReduceOps(unittest.TestCase):
 class TestMatrixOps(unittest.TestCase):
     def test_transpose(self): self.assertEqual(m.transpose().tolist(), c.transpose().tolist())
     def test_matmul(self): self.assertEqual(m.matmul(m).tolist(), c.__matmul__(c).tolist())
+    
+class TestAxisWiseOps(unittest.TestCase):
+    # def test_add(self, axis=1): self.assertEqual(m.add(axis=axis).tolist() == c.add(axis=axis).tolist())
+    pass
  
 if __name__ == "__main__":
     unittest.main()

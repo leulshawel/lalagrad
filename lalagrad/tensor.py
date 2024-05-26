@@ -1,10 +1,9 @@
 #TODO: 
-# expand and tensordot op
+# expand conv and tensordot ops
 
-
-import numpy as np
+from numpy import ndarray
+from math import prod, log10
 from typing import Optional, Union, List, Tuple
-import math
 
 from lalagrad.nn import Acts
 from lalagrad.dtype import DType, dtypes, TYPES_DICT
@@ -14,26 +13,26 @@ from lalagrad.array_ops import flatten, array_from_shape, add_const,\
     shape_from_array, scale, devide_array, rand_array_from_shape,\
     map_along_axis, build_higher_dim, _dot
     
+    
 gettype = lambda x: next((v for  v in TYPES_DICT.values() if v.eq == x.__class__), None)
 
-
-#a tensor needs to be atleast 2D (a matrice);    
+# a tensor is atleast 2D (a matrice);    
 # a vector is a row or column matrice and scalar is a (1, 1) matrice
 class Tensor:
     
     __slots__ = "data", "device", "shape", "dtype", "ctx", "strong", "requires_grad", "grad"
     _isinstance = lambda obj, classes: obj.__class__ if isinstance(obj, classes) else False
     
-    def __init__(self, data: Union[None, List, Tuple , np.ndarray]=None, shape: Union[None, List, Tuple]=None, dtype: Optional[DType]=None, 
+    def __init__(self, data: Union[None, List, Tuple , ndarray]=None, shape: Union[None, List, Tuple]=None, dtype: Optional[DType]=None, 
                  device: Device=devices.CPU, ctx = None, requires_grad=False, strong: bool=True):
         #data or shape is a must
         assert data is not None or shape is not None, "Tensor object requires atleast a data or a shape"
         if data is None: self.data, self.shape, self.dtype = None, shape, dtype
         #create from numpy ndarray
         else:
-            assert (_class := Tensor._isinstance(data, (np.ndarray, list, tuple, int, float, bool))), f"Tensor object can't be built from object of type {_class}"
-            if _class in (int, float, bool): data, _class = [[data]], list
-            if (_class == np.ndarray): 
+            assert (_class := Tensor._isinstance(data, (ndarray, list, tuple, int, float, bool))), f"Tensor object can't be built from object of type {_class}"
+            if _class in (int, float, bool): data, _class = [[data]], list #allow something like x = Tensor(3) at a syntax level atleast
+            if (_class == ndarray): 
                 data, self.dtype = data.tolist(), TYPES_DICT[data.dtype.name] 
                 self.data = flatten(data)
             #create from a python list or tuple                                                                                       
@@ -44,7 +43,7 @@ class Tensor:
 
             _shape = shape_from_array(data)
             _shape.reverse()    
-            shape = list(shape if shape is not None and math.prod(_shape) == math.prod(shape) else _shape)
+            shape = list(shape if shape is not None and prod(_shape) == prod(shape) else _shape)
             self.shape = tuple(shape)
 
         #this are here cause they are commonly found in most ai frameworks and might be used in the future
@@ -112,15 +111,15 @@ class Tensor:
     #get Tensor properties
     def is_float(self): return self.dtype in (dtypes.float16, dtypes.float32, dtypes.float64)
     def get_device(self): return self.device  
-    def numel(self): return math.prod(self.shape)  
+    def numel(self): return prod(self.shape)  
     def __repr__(self): return f"<Tensor: of shape: {self.shape}, {self.dtype} on {self.device} with grad: {self.grad}>"
     
     
     #on self or return unaryOps
     @unary_op_wrapper()
-    def sadd(self, s): return add_const(self.data, s), self.shape
+    def sadd(self, s): return [e+s for e in self.data], self.shape
     @unary_op_wrapper()
-    def smul(self, s): return scale(self.data, s), self.shape
+    def smul(self, s): return [e*s for e in self.data], self.shape
     @unary_op_wrapper()
     def __not__(self):  return [not b for b in self.data] if self.dtype==DType('bool') else [-1 * e for e in self._dat], self.shape
     @unary_op_wrapper()
@@ -129,11 +128,13 @@ class Tensor:
     @unary_op_wrapper(to_tensor=False)
     def log(self, b: int=10): #the wrapper changes b to a tensor of Tensor([[b]])
         assert b != 1, "base can't be One"
-        return [round(math.log10(elem)/math.log10(b), self.dtype.precision) if self.dtype.precision is not None else math.log10(elem)/math.log10(b) for elem in self.data], self.shape
+        return [round(log10(elem)/log10(b), self.dtype.precision) if self.dtype.precision is not None else log10(elem)/log10(b) for elem in self.data], self.shape
     @unary_op_wrapper()
     def transpose(self, o): 
         assert len(self.shape) == 2, "transpose is only defined for matrices (2D Tensors)"
-        data = flatten(map_along_axis(self.tolist(), lambda x: x)) 
+        #data = flatten(map_along_axis(self.tolist(), lambda x: x)) 
+        cln = self.shape[1]
+        data = flatten([list(self.data[i] for i in range(j, len(self.data), cln)) for j in range(cln)])
         return data, (self.shape[1], self.shape[0])
     
                 
@@ -157,20 +158,20 @@ class Tensor:
         assert len(self.shape) == len(other.shape) == 2, "matmul is only defined for matrices (2D Tensors)"
         assert self.shape[1] == other.shape[0], f"column of {self.shape} != row of {other.shape}"
         othert = other.transpose()
-        data = flatten([[_dot(self.data[i: i+self.shape[1]], othert.data[j: j + other.shape[0]]) for j in range(0, math.prod(other.shape), other.shape[0])] for i in range(0, math.prod(self.shape),self.shape[1])])
+        data = flatten([[_dot(self.data[i: i+self.shape[1]], othert.data[j: j + other.shape[0]]) for j in range(0, prod(other.shape), other.shape[0])] for i in range(0, prod(self.shape),self.shape[1])])
         return data, (self.shape[0], other.shape[1])
     
     #on self ops
     def check(self):
         assert all([e.__class__ == self.dtype.eq for e in self.data]), "check failed on dtype" 
-        assert len(self.data) == math.prod(self.shape), "check failed on shape"
+        assert len(self.data) == prod(self.shape), "check failed on shape"
         print("Tensor object in optimal state")
     def set_device(self, d: Device): self.device = d
     def setdata(self, l: Union[int, float, bool]): 
         self.dtype = (t if t > self.dtype else self.dtype) if (t := gettype(l[0])) is not None else self.dtype
         self.data = [round(e, self.dtype.precision) for e in l]
     def reshape(self, shape):
-        assert math.prod(self.shape) == math.prod(shape), "Tensor can't be of this shape"
+        assert prod(self.shape) == prod(shape), "Tensor can't be of this shape"
         self.shape = tuple(shape)
     
     #reduce ops
@@ -183,9 +184,9 @@ class Tensor:
         return reduced
     #mul elemens in a single axis
     def mul(self, axis=None):
-        if axis is None: return Tensor([[math.prod(self.data)]])
+        if axis is None: return Tensor([[prod(self.data)]])
         assert axis < len(self.shape), "dimension doesn't exist"
-        reduced = Tensor(build_higher_dim(axis, self.tolist(), math.prod)) if axis != 0 else Tensor([map_along_axis(self.tolist(), math.prod)])
+        reduced = Tensor(build_higher_dim(axis, self.tolist(), prod)) if axis != 0 else Tensor([map_along_axis(self.tolist(), prod)])
         reduced.shape = tuple(1 if i==axis else e for i, e in enumerate(self.shape))
         return reduced    #min along an axis or of a Tensor
     def min(self, axis=None):
@@ -210,8 +211,7 @@ class Tensor:
         data, win = padd + data + padd, min(l2, l1)
         return []
     
-    #MAP a function on a Tensor (helps for activation functions)
-    def map_(self, f): self.data = list(map(f, self.data))
+    #Acctivations from ./nn/__init__.py
     def Relu(self): self.data = Acts.Relu(self.data)
     def Tanh(self): self.data = Acts.Tanh(self.data)
     def Sigmoid(self): self.data = Acts.Sigmoid(self.data)
