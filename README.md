@@ -12,7 +12,7 @@ And with a decent nn module<br>
 
 <h3><b>Tensors</b></h3>
 
-most tensor creation methods and operations supported by tinygrad will be here (may be all of them) look at lalagrad/tensor.py
+most tensor creation methods and operations supported by tinygrad will be here (may be all of them) look at [lalagrad/tensor.py](https://github.com/leulshawel/lalagrad/blob/main/lalagrad/tensor.py)
 
 ```python
 from lalagrad import Tensor
