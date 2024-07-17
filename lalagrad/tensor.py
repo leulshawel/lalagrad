@@ -4,13 +4,14 @@
 from numpy import ndarray
 from math import prod, log10
 from typing import Optional, Union, List, Tuple
+from time import time
 
 from lalagrad.nn import Acts
 from lalagrad.dtype import DType, dtypes, TYPES_DICT
 from lalagrad.device import Device ,devices
 from lalagrad.ops import binary_op_wrapper, unary_op_wrapper
-from lalagrad.array_ops import flatten, array_from_shape, add_const,\
-    shape_from_array, scale, devide_array, rand_array_from_shape,\
+from lalagrad.array_ops import flatten, array_from_shape,\
+    shape_from_array, devide_array, rand_array_from_shape,\
     map_along_axis, build_higher_dim, _dot
     
     
@@ -19,12 +20,13 @@ gettype = lambda x: next((v for  v in TYPES_DICT.values() if v.eq == x.__class__
 # a tensor is atleast 2D (a matrice);    
 # a vector is a row or column matrice and scalar is a (1, 1) matrice
 class Tensor:
-    
+    c = 0
     __slots__ = "data", "device", "shape", "dtype", "ctx", "strong", "requires_grad", "grad"
     _isinstance = lambda obj, classes: obj.__class__ if isinstance(obj, classes) else False
     
     def __init__(self, data: Union[None, List, Tuple , ndarray]=None, shape: Union[None, List, Tuple]=None, dtype: Optional[DType]=None, 
                  device: Device=devices.CPU, ctx = None, requires_grad=False, strong: bool=True):
+        
         #data or shape is a must
         assert data is not None or shape is not None, "Tensor object requires atleast a data or a shape"
         if data is None: self.data, self.shape, self.dtype = None, shape, dtype
@@ -204,6 +206,7 @@ class Tensor:
         return reduced   
     
     #NN helper ops
+    #TODO: finish this shit
     def conv1d(self, kernel, padding=0, stride=1):
         assert (_class := Tensor._isinstance(kernel, (list, tuple, Tensor))), "Invalid kernel"
         data, kernel = self.data, kernel if  _class == list else (list(kernel) if _class == tuple else  kernel.data)
@@ -218,3 +221,4 @@ class Tensor:
     def Softmax(self): self.data = Acts.Softmax(self.data)
     def Signum(self): self.data = Acts.Signum(self.data)
     
+

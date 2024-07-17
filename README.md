@@ -1,6 +1,9 @@
 <img style="float: left" src=./lalagrad/utils/img/lala.jpeg alt=drawing width=200/>
 <b><h1>lalagrad</h1></b> lalagrad is a mid-level Deep learning framework currently under development<br> 
 
+<b>[In Prograss]</b>
+
+
 for Educational purposes mainly and will be between [@tinygrad](https://github.com/tinygrad/tinygrad) and [@microrad](https://github.com/karpathy/micrograd).
 
 <h3><b>The plan</b></h3>
@@ -64,7 +67,7 @@ if __name__ == "__main__":
 <h3><b>Benchs</b></h3>
 
 currently we are almost 20 times slower than Numpy for matmul and 5 times slower for element wise ops<br>
-But let's get thid thing working and we will refactor for speed
+But let's get this thing working and we will refactor for speed later
 
 ```python
 from bench.lalagrad.numpy import SpeedBench, Benchs #lalagrad benchs against numpy
