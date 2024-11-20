@@ -84,7 +84,7 @@ class Tensor:
     @staticmethod
     def merge(*args: Tuple):
         _t = args[0]
-        assert all([t.shape == _t.shape for t in args]), "Only tensors of the same shape can b"
+        assert all([t.shape == _t.shape for t in args]), "Only tensors of the same shape can be merged"
         data, shape = [t.data for t in args], (len(args), ) + tuple(s for s in _t.shape)
         return Tensor(data=data, shape=shape, dtype=max([t.dtype for t in args]))
     #build a tensor like self but filled with ones
@@ -190,14 +190,15 @@ class Tensor:
         assert axis < len(self.shape), "dimension doesn't exist"
         reduced = Tensor(build_higher_dim(axis, self.tolist(), prod)) if axis != 0 else Tensor([map_along_axis(self.tolist(), prod)])
         reduced.shape = tuple(1 if i==axis else e for i, e in enumerate(self.shape))
-        return reduced    #min along an axis or of a Tensor
+        return reduced    
+    #min along an axis of a Tensor
     def min(self, axis=None):
         if axis is None: return Tensor([[min(self.data)]])
         assert axis < len(self.shape), "dimension doesn't exist"
         reduced = Tensor(build_higher_dim(axis, self.tolist(), min)) if axis != 0 else Tensor([map_along_axis(self.tolist(), min)])
         reduced.shape = tuple(1 if i==axis else e for i, e in enumerate(self.shape))
         return reduced
-    #max along an axis or of a Tensor
+    #max along an axis of a Tensor
     def max(self, axis=None): 
         if axis is None: return Tensor([[max(self.data)]])
         assert axis < len(self.shape), "dimension doesn't exist"
@@ -214,7 +215,7 @@ class Tensor:
         data, win = padd + data + padd, min(l2, l1)
         return []
     
-    #Acctivations from ./nn/__init__.py
+    #Activations from ./nn/__init__.py
     def Relu(self): self.data = Acts.Relu(self.data)
     def Tanh(self): self.data = Acts.Tanh(self.data)
     def Sigmoid(self): self.data = Acts.Sigmoid(self.data)
