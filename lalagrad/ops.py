@@ -25,7 +25,7 @@ def binary_op_wrapper(to_tensor=True, equal_shape=True):
     return decorator
     
     
-#samething but for unary ops
+#samething similar but for unary ops
 def unary_op_wrapper(to_tensor=True):
     def decorator(func):
         def wrapper(self, other=None):
